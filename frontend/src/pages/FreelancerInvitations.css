@@ -1,0 +1,792 @@
+.invitations-page {
+    min-height: 100vh;
+    background: #f5f7fb;
+    color: #111827;
+}
+
+
+/* =========================================
+   NAVBAR
+========================================= */
+
+.invitations-navbar {
+    height: 72px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    display: flex;
+    align-items: center;
+
+    padding: 0 48px;
+
+    gap: 45px;
+}
+
+
+.invitations-logo {
+    color: #2563eb;
+
+    font-size: 29px;
+
+    font-weight: 800;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+}
+
+
+.invitations-nav {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    flex: 1;
+}
+
+
+.invitations-nav button {
+    border: none;
+
+    background: transparent;
+
+    color: #111827;
+
+    padding: 11px 16px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+.invitations-nav button:hover {
+    background: #f3f6fb;
+
+    color: #2563eb;
+}
+
+
+.invitations-nav-active {
+    background: #eef5ff !important;
+
+    color: #2563eb !important;
+}
+
+
+.invitations-user {
+    display: flex;
+
+    align-items: center;
+
+    gap: 18px;
+
+    white-space: nowrap;
+}
+
+
+.invitations-user span {
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+.invitations-logout {
+    background: #ffffff;
+
+    border: 1px solid #d1d5db;
+
+    padding: 10px 18px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+
+    cursor: pointer;
+}
+
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.invitations-container {
+    max-width: 1180px;
+
+    margin: 0 auto;
+
+    padding: 40px 30px 70px;
+}
+
+
+.invitations-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 30px;
+
+    margin-bottom: 45px;
+}
+
+
+.invitations-eyebrow {
+    color: #2563eb;
+
+    font-size: 12px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+
+    margin: 0 0 7px;
+}
+
+
+.invitations-header h1 {
+    font-size: 34px;
+
+    margin: 0 0 8px;
+
+    color: #111827;
+}
+
+
+.invitations-header p {
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: 16px;
+}
+
+
+.refresh-button {
+    border: none;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    padding: 12px 22px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.refresh-button:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   MESSAGES
+========================================= */
+
+.invitation-success,
+.invitation-error {
+    padding: 15px 18px;
+
+    border-radius: 9px;
+
+    margin-bottom: 24px;
+
+    font-size: 14px;
+}
+
+
+.invitation-success {
+    background: #ecfdf3;
+
+    border: 1px solid #bbf7d0;
+
+    color: #166534;
+}
+
+
+.invitation-error {
+    background: #fef2f2;
+
+    border: 1px solid #fecaca;
+
+    color: #b91c1c;
+}
+
+
+/* =========================================
+   SECTION
+========================================= */
+
+.invitation-section {
+    width: 100%;
+}
+
+
+.section-heading {
+    margin-bottom: 20px;
+}
+
+
+.section-heading h2 {
+    margin: 0 0 5px;
+
+    font-size: 24px;
+}
+
+
+.section-heading p {
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+
+/* =========================================
+   INVITATION LIST
+========================================= */
+
+.invitation-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 22px;
+}
+
+
+.invitation-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    padding: 30px;
+
+    box-shadow: 0 7px 24px rgba(
+        15,
+        23,
+        42,
+        0.05
+    );
+}
+
+
+/* =========================================
+   CARD HEADER
+========================================= */
+
+.invitation-card-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding-bottom: 25px;
+
+    border-bottom: 1px solid #eef0f4;
+}
+
+
+.invitation-label {
+    display: block;
+
+    color: #2563eb;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 8px;
+}
+
+
+.invitation-card-header h3 {
+    margin: 0;
+
+    font-size: 23px;
+
+    color: #111827;
+}
+
+
+.invitation-status {
+    padding: 9px 16px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+
+    font-weight: 800;
+
+    white-space: nowrap;
+}
+
+
+.invitation-status.pending {
+    background: #fef3c7;
+
+    color: #b45309;
+}
+
+
+.invitation-status.accepted {
+    background: #dcfce7;
+
+    color: #15803d;
+}
+
+
+.invitation-status.rejected {
+    background: #fee2e2;
+
+    color: #b91c1c;
+}
+
+
+/* =========================================
+   DETAILS
+========================================= */
+
+.invitation-details {
+    display: grid;
+
+    grid-template-columns: 1fr 1fr;
+
+    gap: 30px;
+
+    padding: 24px 0;
+
+    border-bottom: 1px solid #eef0f4;
+}
+
+
+.invitation-details span {
+    display: block;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    margin-bottom: 7px;
+}
+
+
+.invitation-details strong {
+    color: #111827;
+
+    font-size: 14px;
+}
+
+
+/* =========================================
+   MESSAGE
+========================================= */
+
+.invitation-message {
+    padding: 25px 0;
+
+    border-bottom: 1px solid #eef0f4;
+}
+
+
+.invitation-message h4 {
+    margin: 0 0 12px;
+
+    font-size: 15px;
+}
+
+
+.invitation-message p {
+    margin: 0;
+
+    background: #f8fafc;
+
+    border-radius: 10px;
+
+    padding: 17px;
+
+    color: #475569;
+
+    font-size: 14px;
+
+    line-height: 1.65;
+}
+
+
+/* =========================================
+   ACTIONS
+========================================= */
+
+.invitation-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 12px;
+
+    padding-top: 24px;
+}
+
+
+.reject-button,
+.accept-button {
+    padding: 12px 20px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+
+.reject-button {
+    background: #ffffff;
+
+    border: 1px solid #d1d5db;
+
+    color: #374151;
+}
+
+
+.accept-button {
+    background: #2563eb;
+
+    border: 1px solid #2563eb;
+
+    color: #ffffff;
+}
+
+
+.reject-button:disabled,
+.accept-button:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================
+   ACCEPTED
+========================================= */
+
+.accepted-section {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+
+    padding-top: 24px;
+}
+
+
+.accepted-message {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    color: #15803d;
+}
+
+
+.accepted-message span {
+    width: 28px;
+    height: 28px;
+
+    border-radius: 50%;
+
+    background: #dcfce7;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-weight: 800;
+}
+
+
+.accepted-message p {
+    margin: 0;
+
+    font-size: 14px;
+
+    font-weight: 600;
+}
+
+
+.workspace-button {
+    border: none;
+
+    background: #111827;
+
+    color: #ffffff;
+
+    padding: 12px 20px;
+
+    border-radius: 9px;
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    cursor: pointer;
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    transition: 0.2s ease;
+}
+
+
+.workspace-button:hover {
+    background: #2563eb;
+
+    transform: translateY(-1px);
+}
+
+
+.workspace-button span {
+    font-size: 17px;
+}
+
+
+/* =========================================
+   REJECTED
+========================================= */
+
+.rejected-message {
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    padding-top: 24px;
+
+    color: #b91c1c;
+}
+
+
+.rejected-message span {
+    font-weight: 800;
+}
+
+
+.rejected-message p {
+    margin: 0;
+
+    font-size: 14px;
+}
+
+
+/* =========================================
+   EMPTY
+========================================= */
+
+.invitation-empty {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    min-height: 300px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+
+    text-align: center;
+
+    padding: 40px;
+}
+
+
+.empty-invitation-icon {
+    width: 60px;
+    height: 60px;
+
+    border-radius: 50%;
+
+    background: #eef2ff;
+
+    color: #2563eb;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    font-size: 25px;
+
+    margin-bottom: 15px;
+}
+
+
+.invitation-empty h3 {
+    margin: 0 0 8px;
+
+    font-size: 20px;
+}
+
+
+.invitation-empty p {
+    max-width: 470px;
+
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+.invitation-spinner {
+    width: 32px;
+    height: 32px;
+
+    border: 3px solid #e5e7eb;
+
+    border-top-color: #2563eb;
+
+    border-radius: 50%;
+
+    animation: invitation-spin 0.8s linear infinite;
+
+    margin-bottom: 15px;
+}
+
+
+@keyframes invitation-spin {
+
+    to {
+        transform: rotate(360deg);
+    }
+
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 900px) {
+
+    .invitations-navbar {
+        padding: 0 20px;
+
+        gap: 15px;
+    }
+
+
+    .invitations-nav {
+        display: none;
+    }
+
+
+    .invitations-container {
+        padding: 30px 20px 50px;
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .invitations-header {
+        flex-direction: column;
+    }
+
+
+    .invitation-card {
+        padding: 20px;
+    }
+
+
+    .invitation-card-header {
+        flex-direction: column;
+    }
+
+
+    .invitation-details {
+        grid-template-columns: 1fr;
+    }
+
+
+    .invitation-actions {
+        flex-direction: column;
+    }
+
+
+    .reject-button,
+    .accept-button {
+        width: 100%;
+    }
+
+
+    .accepted-section {
+        flex-direction: column;
+
+        align-items: stretch;
+    }
+
+
+    .workspace-button {
+        justify-content: center;
+
+        width: 100%;
+    }
+
+}

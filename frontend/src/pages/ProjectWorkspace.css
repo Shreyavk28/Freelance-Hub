@@ -1,0 +1,696 @@
+.workspace-page {
+    min-height: 100vh;
+    background: #f6f7fb;
+    color: #1f2937;
+}
+
+
+/* =========================================
+   HEADER
+========================================= */
+
+.workspace-header {
+    min-height: 86px;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 18px 42px;
+}
+
+
+.workspace-header-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+
+.workspace-back-button {
+    width: 42px;
+    height: 42px;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    font-size: 21px;
+    cursor: pointer;
+
+    transition: 0.2s ease;
+}
+
+
+.workspace-back-button:hover {
+    background: #f3f4f6;
+}
+
+
+.workspace-breadcrumb {
+    color: #6b7280;
+    font-size: 13px;
+    margin-bottom: 4px;
+}
+
+
+.workspace-header h1 {
+    margin: 0;
+
+    font-size: 24px;
+    font-weight: 700;
+
+    color: #111827;
+}
+
+
+.workspace-header-right {
+    display: flex;
+    align-items: center;
+}
+
+
+.workspace-status {
+    padding: 8px 14px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-transform: capitalize;
+}
+
+
+.workspace-status.in-progress {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+
+.workspace-status.open {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+
+.workspace-status.completed {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+
+.workspace-status.cancelled {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+
+/* =========================================
+   CONTAINER
+========================================= */
+
+.workspace-container {
+    max-width: 1250px;
+
+    margin: 0 auto;
+
+    padding: 30px 30px 60px;
+}
+
+
+/* =========================================
+   SUMMARY
+========================================= */
+
+.workspace-summary {
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, 1fr);
+
+    gap: 18px;
+
+    margin-bottom: 24px;
+}
+
+
+.summary-item {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+    border-radius: 14px;
+
+    padding: 20px 22px;
+}
+
+
+.summary-label {
+    display: block;
+
+    color: #6b7280;
+
+    font-size: 12px;
+
+    margin-bottom: 7px;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.5px;
+}
+
+
+.summary-item strong {
+    font-size: 16px;
+
+    color: #111827;
+}
+
+
+/* =========================================
+   TABS
+========================================= */
+
+.workspace-tabs {
+    display: flex;
+
+    align-items: center;
+
+    gap: 6px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    padding: 6px;
+
+    margin-bottom: 24px;
+
+    overflow-x: auto;
+}
+
+
+.workspace-tab {
+    border: none;
+
+    background: transparent;
+
+    color: #6b7280;
+
+    padding: 11px 20px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+
+    transition: 0.2s ease;
+}
+
+
+.workspace-tab:hover {
+    background: #f3f4f6;
+    color: #111827;
+}
+
+
+.workspace-tab.active {
+    background: #111827;
+
+    color: #ffffff;
+}
+
+
+/* =========================================
+   CARDS
+========================================= */
+
+.workspace-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    padding: 26px;
+
+    margin-bottom: 20px;
+}
+
+
+.workspace-card-header {
+    margin-bottom: 25px;
+}
+
+
+.workspace-card-eyebrow {
+    display: block;
+
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: #6b7280;
+
+    letter-spacing: 1px;
+
+    margin-bottom: 7px;
+}
+
+
+.workspace-card h2 {
+    margin: 0;
+
+    font-size: 20px;
+
+    color: #111827;
+}
+
+
+/* =========================================
+   PROJECT DETAILS
+========================================= */
+
+.project-overview-grid {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 18px;
+}
+
+
+.project-detail {
+    background: #f9fafb;
+
+    border-radius: 10px;
+
+    padding: 17px;
+}
+
+
+.project-detail span {
+    display: block;
+
+    color: #6b7280;
+
+    font-size: 12px;
+
+    margin-bottom: 6px;
+}
+
+
+.project-detail strong {
+    color: #111827;
+
+    font-size: 15px;
+
+    text-transform: capitalize;
+}
+
+
+/* =========================================
+   PROGRESS
+========================================= */
+
+.workspace-progress {
+    max-width: 800px;
+}
+
+
+.progress-step {
+    display: flex;
+
+    gap: 15px;
+
+    align-items: flex-start;
+}
+
+
+.progress-dot {
+    width: 34px;
+    height: 34px;
+
+    flex-shrink: 0;
+
+    border-radius: 50%;
+
+    background: #e5e7eb;
+
+    color: #6b7280;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 13px;
+
+    font-weight: 700;
+}
+
+
+.progress-step.completed .progress-dot {
+    background: #111827;
+
+    color: #ffffff;
+}
+
+
+.progress-step strong {
+    display: block;
+
+    font-size: 15px;
+
+    color: #111827;
+
+    margin-bottom: 4px;
+}
+
+
+.progress-step p {
+    margin: 0;
+
+    color: #6b7280;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+.progress-line {
+    width: 2px;
+
+    height: 35px;
+
+    background: #e5e7eb;
+
+    margin-left: 16px;
+
+    margin-top: 4px;
+
+    margin-bottom: 4px;
+}
+
+
+/* =========================================
+   PLACEHOLDER
+========================================= */
+
+.workspace-placeholder {
+    min-height: 420px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    display: flex;
+
+    flex-direction: column;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    padding: 40px;
+}
+
+
+.placeholder-icon {
+    width: 62px;
+    height: 62px;
+
+    border-radius: 50%;
+
+    background: #f3f4f6;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 25px;
+
+    margin-bottom: 18px;
+}
+
+
+.workspace-placeholder h2 {
+    margin: 0 0 8px;
+
+    font-size: 21px;
+
+    color: #111827;
+}
+
+
+.workspace-placeholder p {
+    margin: 0;
+
+    max-width: 450px;
+
+    color: #6b7280;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================
+   LOADING
+========================================= */
+
+.workspace-loading {
+    min-height: 70vh;
+
+    display: flex;
+
+    flex-direction: column;
+
+    justify-content: center;
+
+    align-items: center;
+}
+
+
+.workspace-spinner {
+    width: 36px;
+    height: 36px;
+
+    border: 3px solid #e5e7eb;
+
+    border-top-color: #111827;
+
+    border-radius: 50%;
+
+    animation: workspace-spin 0.8s linear infinite;
+
+    margin-bottom: 15px;
+}
+
+
+@keyframes workspace-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+
+.workspace-loading p {
+    color: #6b7280;
+
+    font-size: 14px;
+}
+
+
+/* =========================================
+   ERROR
+========================================= */
+
+.workspace-error-card {
+    max-width: 500px;
+
+    margin: 100px auto;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 16px;
+
+    padding: 40px;
+
+    text-align: center;
+}
+
+
+.workspace-error-icon {
+    width: 50px;
+    height: 50px;
+
+    border-radius: 50%;
+
+    background: #fee2e2;
+
+    color: #b91c1c;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: center;
+
+    margin: 0 auto 18px;
+
+    font-size: 22px;
+
+    font-weight: 700;
+}
+
+
+.workspace-error-card h2 {
+    margin: 0 0 10px;
+
+    color: #111827;
+}
+
+
+.workspace-error-card p {
+    color: #6b7280;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    margin-bottom: 25px;
+}
+
+
+.workspace-error-actions {
+    display: flex;
+
+    justify-content: center;
+
+    gap: 10px;
+}
+
+
+.workspace-primary-button,
+.workspace-secondary-button {
+    padding: 11px 18px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+
+.workspace-primary-button {
+    border: none;
+
+    background: #111827;
+
+    color: #ffffff;
+}
+
+
+.workspace-primary-button:hover {
+    background: #000000;
+}
+
+
+.workspace-secondary-button {
+    border: 1px solid #d1d5db;
+
+    background: #ffffff;
+
+    color: #374151;
+}
+
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 800px) {
+
+    .workspace-header {
+        padding: 16px 20px;
+    }
+
+
+    .workspace-header h1 {
+        font-size: 19px;
+    }
+
+
+    .workspace-container {
+        padding: 20px 16px 40px;
+    }
+
+
+    .workspace-summary {
+        grid-template-columns: 1fr;
+    }
+
+
+    .project-overview-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .workspace-tabs {
+        border-radius: 10px;
+    }
+
+}
+
+
+@media (max-width: 500px) {
+
+    .workspace-header {
+        align-items: flex-start;
+    }
+
+
+    .workspace-header-right {
+        display: none;
+    }
+
+
+    .workspace-header-left {
+        gap: 12px;
+    }
+
+
+    .workspace-card {
+        padding: 20px;
+    }
+
+
+    .workspace-error-card {
+        margin: 50px 16px;
+        padding: 30px 20px;
+    }
+
+}
