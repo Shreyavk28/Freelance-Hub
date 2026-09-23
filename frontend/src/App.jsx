@@ -12,6 +12,7 @@ import {
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import PlatformOverview from "./pages/PlatformOverview";
 
 // =========================================
 // DASHBOARDS
@@ -40,6 +41,7 @@ import FindFreelancers from "./pages/FindFreelancers";
 import FreelancerPublicProfile from "./pages/FreelancerPublicProfile";
 import FreelancerInvitations from "./pages/FreelancerInvitations";
 import ProjectWorkspace from "./pages/ProjectWorkspace";
+
 
 
 // =====================================================
@@ -181,6 +183,20 @@ function App() {
                     path="/register"
                     element={<Register />}
                 />
+
+                <Route
+    path="/overview"
+    element={
+        <ProtectedRoute
+            allowedRoles={[
+                "CLIENT",
+                "FREELANCER",
+            ]}
+        >
+            <PlatformOverview />
+        </ProtectedRoute>
+    }
+/>
 
 
                 {/* =========================================

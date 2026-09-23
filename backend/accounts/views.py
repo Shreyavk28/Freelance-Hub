@@ -1,3 +1,5 @@
+from django.contrib.auth import get_user_model
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,6 +8,9 @@ from rest_framework.permissions import IsAuthenticated
 
 from .serializers import RegisterSerializer, LoginSerializer
 from .permissions import IsClient, IsFreelancer
+
+from projects.models import Project
+from skills.models import Skill
 
 
 class RegisterView(APIView):
@@ -37,6 +42,42 @@ class RegisterView(APIView):
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
+    
+class PlatformOverviewView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        User = get_user_model()
+
+        total_clients = User.objects.filter(
+            role=User.Role.CLIENT
+        ).count()
+
+        total_freelancers = User.objects.filter(
+            role=User.Role.FREELANCER
+        ).count()
+
+        total_projects = Project.objects.count()
+
+        open_projects = Project.objects.filter(
+            status=Project.Status.OPEN
+        ).count()
+
+        completed_projects = Project.objects.filter(
+            status=Project.Status.COMPLETED
+        ).count()
+
+        total_skills = Skill.objects.count()
+
+        return Response({
+            "total_clients": total_clients,
+            "total_freelancers": total_freelancers,
+            "total_projects": total_projects,
+            "open_projects": open_projects,
+            "completed_projects": completed_projects,
+            "total_skills": total_skills
+        })
     
     
 class ClientTestView(APIView):

@@ -48,7 +48,7 @@ function Login() {
             /*
              * Decode JWT payload.
              *
-             * Your Django LoginSerializer adds:
+             * Django LoginSerializer adds:
              * username
              * role
              */
@@ -57,7 +57,8 @@ function Login() {
             try {
                 payload = JSON.parse(
                     atob(
-                        access.split(".")[1]
+                        access
+                            .split(".")[1]
                             .replace(/-/g, "+")
                             .replace(/_/g, "/")
                     )
@@ -74,7 +75,7 @@ function Login() {
             }
 
             /*
-             * Make sure the backend returned a valid role.
+             * Validate role returned by backend.
              */
             if (
                 payload.role !== "CLIENT" &&
@@ -91,7 +92,7 @@ function Login() {
             };
 
             /*
-             * Save user + access token
+             * Save user and access token
              * through AuthContext.
              */
             login(userData, access);
@@ -105,19 +106,16 @@ function Login() {
             );
 
             /*
-             * Redirect according to role.
+             * IMPORTANT:
+             *
+             * Every successful login now goes
+             * to the FreelanceHub Overview first.
+             *
+             * We are NOT checking localStorage here.
+             * Therefore the overview appears after
+             * every login.
              */
-            if (userData.role === "CLIENT") {
-
-                navigate("/client/dashboard");
-
-            } else if (
-                userData.role === "FREELANCER"
-            ) {
-
-                navigate("/freelancer/dashboard");
-
-            }
+            navigate("/overview");
 
         } catch (error) {
 
@@ -159,7 +157,9 @@ function Login() {
 
             } else if (error.message) {
 
-                setError(error.message);
+                setError(
+                    error.message
+                );
 
             } else {
 

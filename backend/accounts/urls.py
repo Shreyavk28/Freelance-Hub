@@ -3,6 +3,7 @@ from django.urls import path
 from .views import (
     RegisterView,
     LoginView,
+    PlatformOverviewView,
     ClientTestView,
     FreelancerTestView
 )
@@ -20,6 +21,12 @@ urlpatterns = [
         LoginView.as_view(),
         name='login'
     ),
+    
+    path(
+    'overview/',
+    PlatformOverviewView.as_view(),
+    name='platform-overview'
+),
 
     path(
         'client-test/',
