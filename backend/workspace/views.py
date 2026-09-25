@@ -7,9 +7,12 @@ from rest_framework import status
 
 from accounts.models import User
 from projects.models import Project
+from proposals.models import Proposal
+from collaborations.models import CollaborationInvitation
 
 from .models import ProjectWorkspace
 from .serializers import ProjectWorkspaceSerializer
+from .services import create_project_workspace
 
 
 class WorkspaceListView(APIView):
@@ -27,6 +30,7 @@ class WorkspaceListView(APIView):
                     "client",
                     "freelancer"
                 )
+                .order_by("-created_at")
             )
 
         elif request.user.role == User.Role.FREELANCER:
@@ -39,11 +43,14 @@ class WorkspaceListView(APIView):
                     "client",
                     "freelancer"
                 )
+                .order_by("-created_at")
             )
 
         else:
             return Response(
-                {"detail": "Invalid user role."},
+                {
+                    "detail": "Invalid user role."
+                },
                 status=status.HTTP_403_FORBIDDEN
             )
 
@@ -72,6 +79,7 @@ class WorkspaceDetailView(APIView):
             id=workspace_id
         )
 
+        # Only project participants can access workspace
         if (
             workspace.client_id != request.user.id
             and
@@ -79,12 +87,17 @@ class WorkspaceDetailView(APIView):
         ):
             return Response(
                 {
-                    "detail": "You do not have access to this workspace."
+                    "detail": (
+                        "You do not have access "
+                        "to this workspace."
+                    )
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = ProjectWorkspaceSerializer(workspace)
+        serializer = ProjectWorkspaceSerializer(
+            workspace
+        )
 
         return Response(
             serializer.data,
@@ -94,19 +107,39 @@ class WorkspaceDetailView(APIView):
 
 class ProjectWorkspaceView(APIView):
     """
-    Get the workspace belonging to a particular project.
+    Get the workspace belonging to a project.
+
+    If the project is already IN_PROGRESS but the workspace
+    is missing, recover/create the workspace using either:
+
+    1. An accepted proposal, or
+    2. An accepted collaboration invitation.
+
+    This also repairs older projects where the project was
+    already started but the workspace was not created.
     """
 
     permission_classes = [IsAuthenticated]
 
     def get(self, request, project_id):
 
+        # -------------------------------------------------
+        # GET PROJECT
+        # -------------------------------------------------
+
         project = get_object_or_404(
-            Project,
+            Project.objects.select_related(
+                "client"
+            ),
             id=project_id
         )
 
+        # -------------------------------------------------
+        # CHECK EXISTING WORKSPACE
+        # -------------------------------------------------
+
         try:
+
             workspace = (
                 ProjectWorkspace.objects
                 .select_related(
@@ -114,17 +147,129 @@ class ProjectWorkspaceView(APIView):
                     "client",
                     "freelancer"
                 )
-                .get(project=project)
+                .get(
+                    project=project
+                )
             )
 
         except ProjectWorkspace.DoesNotExist:
 
-            return Response(
-                {
-                    "detail": "Workspace not found for this project."
-                },
-                status=status.HTTP_404_NOT_FOUND
+            # -------------------------------------------------
+            # WORKSPACE DOES NOT EXIST
+            # -------------------------------------------------
+
+            if project.status != Project.Status.IN_PROGRESS:
+
+                return Response(
+                    {
+                        "detail": (
+                            "Workspace has not been created "
+                            "for this project yet."
+                        )
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # -------------------------------------------------
+            # FIRST: FIND ACCEPTED PROPOSAL
+            # -------------------------------------------------
+
+            accepted_proposal = (
+                Proposal.objects
+                .select_related(
+                    "freelancer"
+                )
+                .filter(
+                    project=project,
+                    status=Proposal.Status.ACCEPTED
+                )
+                .order_by("-updated_at")
+                .first()
             )
+
+            freelancer = None
+
+            if accepted_proposal is not None:
+                freelancer = accepted_proposal.freelancer
+
+            # -------------------------------------------------
+            # SECOND: FIND ACCEPTED INVITATION
+            #
+            # This is important for projects that were started
+            # through the invitation workflow.
+            # -------------------------------------------------
+
+            if freelancer is None:
+
+                accepted_invitation = (
+                    CollaborationInvitation.objects
+                    .select_related(
+                        "freelancer"
+                    )
+                    .filter(
+                        project=project,
+                        status=(
+                            CollaborationInvitation
+                            .Status
+                            .ACCEPTED
+                        )
+                    )
+                    .order_by("-updated_at")
+                    .first()
+                )
+
+                if accepted_invitation is not None:
+                    freelancer = (
+                        accepted_invitation.freelancer
+                    )
+
+            # -------------------------------------------------
+            # NO ACCEPTED PARTICIPANT FOUND
+            # -------------------------------------------------
+
+            if freelancer is None:
+
+                return Response(
+                    {
+                        "detail": (
+                            "Project is in progress, "
+                            "but no accepted proposal or "
+                            "accepted invitation was found."
+                        )
+                    },
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # -------------------------------------------------
+            # CREATE MISSING WORKSPACE
+            # -------------------------------------------------
+
+            workspace, workspace_created = (
+                create_project_workspace(
+                    project=project,
+                    freelancer=freelancer
+                )
+            )
+
+            # -------------------------------------------------
+            # RELOAD WORKSPACE
+            # -------------------------------------------------
+
+            workspace = (
+                ProjectWorkspace.objects
+                .select_related(
+                    "project",
+                    "client",
+                    "freelancer"
+                )
+                .get(
+                    id=workspace.id
+                )
+            )
+
+        # -------------------------------------------------
+        # CHECK USER ACCESS
+        # -------------------------------------------------
 
         if (
             workspace.client_id != request.user.id
@@ -133,12 +278,21 @@ class ProjectWorkspaceView(APIView):
         ):
             return Response(
                 {
-                    "detail": "You do not have access to this workspace."
+                    "detail": (
+                        "You do not have access "
+                        "to this workspace."
+                    )
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = ProjectWorkspaceSerializer(workspace)
+        # -------------------------------------------------
+        # SERIALIZE
+        # -------------------------------------------------
+
+        serializer = ProjectWorkspaceSerializer(
+            workspace
+        )
 
         return Response(
             serializer.data,

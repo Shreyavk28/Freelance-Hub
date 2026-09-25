@@ -14,15 +14,23 @@ from .serializers import ProposalSerializer
 
 
 class ProposalCreateView(APIView):
+
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
 
-        # Only freelancers can submit proposals
+        # -------------------------------------------------
+        # ONLY FREELANCERS CAN SUBMIT PROPOSALS
+        # -------------------------------------------------
+
         if request.user.role != User.Role.FREELANCER:
+
             return Response(
                 {
-                    "detail": "Only freelancers can submit proposals."
+                    "detail": (
+                        "Only freelancers can "
+                        "submit proposals."
+                    )
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -30,6 +38,7 @@ class ProposalCreateView(APIView):
         project_id = request.data.get("project")
 
         if not project_id:
+
             return Response(
                 {
                     "detail": "Project ID is required."
@@ -37,11 +46,18 @@ class ProposalCreateView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # -------------------------------------------------
+        # GET PROJECT
+        # -------------------------------------------------
+
         try:
+
             project = Project.objects.get(
                 id=project_id
             )
+
         except Project.DoesNotExist:
+
             return Response(
                 {
                     "detail": "Project not found."
@@ -49,35 +65,60 @@ class ProposalCreateView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Freelancer cannot apply to their own project
+        # -------------------------------------------------
+        # OWN PROJECT CHECK
+        # -------------------------------------------------
+
         if project.client_id == request.user.id:
+
             return Response(
                 {
-                    "detail": "You cannot submit a proposal to your own project."
+                    "detail": (
+                        "You cannot submit a proposal "
+                        "to your own project."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Proposal can only be submitted to an open project
+        # -------------------------------------------------
+        # PROJECT MUST BE OPEN
+        # -------------------------------------------------
+
         if project.status != Project.Status.OPEN:
+
             return Response(
                 {
-                    "detail": "Proposals can only be submitted to open projects."
+                    "detail": (
+                        "Proposals can only be submitted "
+                        "to open projects."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Check for duplicate proposal
+        # -------------------------------------------------
+        # DUPLICATE PROPOSAL CHECK
+        # -------------------------------------------------
+
         if Proposal.objects.filter(
             project=project,
             freelancer=request.user
         ).exists():
+
             return Response(
                 {
-                    "detail": "You have already submitted a proposal for this project."
+                    "detail": (
+                        "You have already submitted "
+                        "a proposal for this project."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # -------------------------------------------------
+        # SERIALIZE
+        # -------------------------------------------------
 
         serializer = ProposalSerializer(
             data=request.data
@@ -90,7 +131,9 @@ class ProposalCreateView(APIView):
             )
 
             return Response(
-                ProposalSerializer(proposal).data,
+                ProposalSerializer(
+                    proposal
+                ).data,
                 status=status.HTTP_201_CREATED
             )
 
@@ -101,14 +144,19 @@ class ProposalCreateView(APIView):
 
 
 class MyProposalsView(APIView):
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
 
         if request.user.role != User.Role.FREELANCER:
+
             return Response(
                 {
-                    "detail": "Only freelancers can access this resource."
+                    "detail": (
+                        "Only freelancers can "
+                        "access this resource."
+                    )
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -135,21 +183,28 @@ class MyProposalsView(APIView):
             status=status.HTTP_200_OK
         )
 
+
 class ProjectProposalsView(APIView):
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request, project_id):
 
         try:
+
             project = Project.objects.get(
                 id=project_id,
                 client=request.user
             )
 
         except Project.DoesNotExist:
+
             return Response(
                 {
-                    "detail": "Project not found or you are not the owner."
+                    "detail": (
+                        "Project not found or "
+                        "you are not the owner."
+                    )
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
@@ -178,12 +233,22 @@ class ProjectProposalsView(APIView):
 
 
 class ProposalDecisionView(APIView):
+
     permission_classes = [IsAuthenticated]
 
     @transaction.atomic
-    def patch(self, request, proposal_id):
+    def patch(
+        self,
+        request,
+        proposal_id
+    ):
+
+        # -------------------------------------------------
+        # GET PROPOSAL
+        # -------------------------------------------------
 
         try:
+
             proposal = (
                 Proposal.objects
                 .select_related(
@@ -196,6 +261,7 @@ class ProposalDecisionView(APIView):
             )
 
         except Proposal.DoesNotExist:
+
             return Response(
                 {
                     "detail": "Proposal not found."
@@ -203,11 +269,14 @@ class ProposalDecisionView(APIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        # Only the project owner can make a decision.
-        #
-        # The project owner can be either:
-        # CLIENT or FREELANCER
-        if proposal.project.client_id != request.user.id:
+        project = proposal.project
+
+        # -------------------------------------------------
+        # ONLY PROJECT OWNER CAN DECIDE
+        # -------------------------------------------------
+
+        if project.client_id != request.user.id:
+
             return Response(
                 {
                     "detail": (
@@ -218,31 +287,46 @@ class ProposalDecisionView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Proposal must still be pending
+        # -------------------------------------------------
+        # PROPOSAL MUST BE PENDING
+        # -------------------------------------------------
+
         if proposal.status != Proposal.Status.PENDING:
+
             return Response(
                 {
-                    "detail": "This proposal has already been processed."
+                    "detail": (
+                        "This proposal has already "
+                        "been processed."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         decision = request.data.get("status")
 
+        # -------------------------------------------------
+        # VALIDATE DECISION
+        # -------------------------------------------------
+
         if decision not in [
             Proposal.Status.ACCEPTED,
             Proposal.Status.REJECTED
         ]:
+
             return Response(
                 {
-                    "detail": "Status must be ACCEPTED or REJECTED."
+                    "detail": (
+                        "Status must be ACCEPTED "
+                        "or REJECTED."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # -------------------------------------------------
+        # =================================================
         # REJECT PROPOSAL
-        # -------------------------------------------------
+        # =================================================
 
         if decision == Proposal.Status.REJECTED:
 
@@ -256,26 +340,33 @@ class ProposalDecisionView(APIView):
             )
 
             return Response(
-                ProposalSerializer(proposal).data,
+                ProposalSerializer(
+                    proposal
+                ).data,
                 status=status.HTTP_200_OK
             )
 
-        # -------------------------------------------------
+        # =================================================
         # ACCEPT PROPOSAL
-        # -------------------------------------------------
+        # =================================================
 
-        project = proposal.project
+        # Project must still be open.
 
-        # Project must still be open
         if project.status != Project.Status.OPEN:
+
             return Response(
                 {
-                    "detail": "This project is no longer open."
+                    "detail": (
+                        "This project is no longer open."
+                    )
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Accept selected proposal
+        # -------------------------------------------------
+        # ACCEPT SELECTED PROPOSAL
+        # -------------------------------------------------
+
         proposal.status = Proposal.Status.ACCEPTED
 
         proposal.save(
@@ -285,7 +376,10 @@ class ProposalDecisionView(APIView):
             ]
         )
 
-        # Reject all other pending proposals
+        # -------------------------------------------------
+        # REJECT OTHER PENDING PROPOSALS
+        # -------------------------------------------------
+
         Proposal.objects.filter(
             project=project,
             status=Proposal.Status.PENDING
@@ -295,7 +389,10 @@ class ProposalDecisionView(APIView):
             status=Proposal.Status.REJECTED
         )
 
-        # Start the project
+        # -------------------------------------------------
+        # START PROJECT
+        # -------------------------------------------------
+
         project.status = Project.Status.IN_PROGRESS
 
         project.save(
@@ -306,20 +403,31 @@ class ProposalDecisionView(APIView):
         )
 
         # -------------------------------------------------
-        # CREATE PROJECT WORKSPACE
+        # CREATE WORKSPACE
         # -------------------------------------------------
 
-        workspace, workspace_created = create_project_workspace(
-            project=project,
-            freelancer=proposal.freelancer
+        workspace, workspace_created = (
+            create_project_workspace(
+                project=project,
+                freelancer=proposal.freelancer
+            )
         )
+
+        # -------------------------------------------------
+        # RESPONSE
+        # -------------------------------------------------
 
         response_data = ProposalSerializer(
             proposal
         ).data
 
-        response_data["workspace_id"] = workspace.id
-        response_data["workspace_created"] = workspace_created
+        response_data["workspace_id"] = (
+            workspace.id
+        )
+
+        response_data["workspace_created"] = (
+            workspace_created
+        )
 
         return Response(
             response_data,

@@ -11,26 +11,26 @@ from .views import (
 urlpatterns = [
 
     path(
-        '',
+        "",
         ProposalCreateView.as_view(),
-        name='proposal-create'
+        name="proposal-create"
     ),
 
     path(
-        'my/',
+        "my/",
         MyProposalsView.as_view(),
-        name='my-proposals'
+        name="my-proposals"
     ),
 
     path(
-        'project/<int:project_id>/',
+        "project/<int:project_id>/",
         ProjectProposalsView.as_view(),
-        name='project-proposals'
+        name="project-proposals"
     ),
 
     path(
-        '<int:proposal_id>/decision/',
+        "<int:proposal_id>/decision/",
         ProposalDecisionView.as_view(),
-        name='proposal-decision'
+        name="proposal-decision"
     ),
 ]

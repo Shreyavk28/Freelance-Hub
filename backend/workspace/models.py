@@ -3,6 +3,7 @@ from django.db import models
 
 
 class ProjectWorkspace(models.Model):
+
     project = models.OneToOneField(
         "projects.Project",
         on_delete=models.CASCADE,
@@ -21,8 +22,15 @@ class ProjectWorkspace(models.Model):
         related_name="freelancer_workspaces"
     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(
+        auto_now_add=True
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True
+    )
 
     def __str__(self):
-        return f"Workspace - {self.project.title}"
+        return (
+            f"Workspace - {self.project.title}"
+        )

@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'proposals',
     'collaborations',
     'workspace',
+    'milestones'
 
 ]
 

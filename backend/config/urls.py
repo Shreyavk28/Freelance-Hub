@@ -11,7 +11,6 @@ urlpatterns = [
     ),
 
     # Authentication
-    # Login, Register, Platform Overview, etc.
     path(
         "api/auth/",
         include("accounts.urls")
@@ -51,5 +50,11 @@ urlpatterns = [
     path(
         "api/workspaces/",
         include("workspace.urls")
+    ),
+
+    # Milestones
+    path(
+        "api/milestones/",
+        include("milestones.urls")
     ),
 ]

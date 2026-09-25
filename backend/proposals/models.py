@@ -38,7 +38,8 @@ class Proposal(models.Model):
     status = models.CharField(
         max_length=20,
         choices=Status.choices,
-        default=Status.PENDING
+        default=Status.Status.PENDING
+        if False else Status.PENDING
     )
 
     created_at = models.DateTimeField(
@@ -52,8 +53,8 @@ class Proposal(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=['project', 'freelancer'],
-                name='unique_project_freelancer_proposal'
+                fields=["project", "freelancer"],
+                name="unique_project_freelancer_proposal"
             )
         ]
 

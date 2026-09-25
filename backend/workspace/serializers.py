@@ -3,7 +3,10 @@ from rest_framework import serializers
 from .models import ProjectWorkspace
 
 
-class ProjectWorkspaceSerializer(serializers.ModelSerializer):
+class ProjectWorkspaceSerializer(
+    serializers.ModelSerializer
+):
+
     project_title = serializers.CharField(
         source="project.title",
         read_only=True
@@ -25,6 +28,7 @@ class ProjectWorkspaceSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+
         model = ProjectWorkspace
 
         fields = [
