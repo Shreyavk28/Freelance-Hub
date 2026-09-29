@@ -5,12 +5,78 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from workspace.models import ProjectWorkspace
+
 from .models import Project
 from .serializers import ProjectSerializer
 
-# Milestone now belongs to the milestones app
 from milestones.models import Milestone
 from milestones.serializers import MilestoneSerializer
+
+
+# =========================================================
+# PROJECT COMPLETION SYNCHRONIZATION
+# =========================================================
+
+def sync_project_completion(project):
+    """
+    Synchronize project status with milestone completion.
+
+    Rules:
+
+    - Project becomes COMPLETED only when:
+        1. At least one milestone exists
+        2. Every milestone has status COMPLETED
+        3. Every milestone has progress = 100
+
+    - If a project was COMPLETED but a milestone is moved
+      back to another status, project becomes IN_PROGRESS.
+
+    - Workspace is NEVER deleted when the project is completed.
+    """
+
+    milestones = Milestone.objects.filter(
+        project=project
+    )
+
+    total_milestones = milestones.count()
+
+    all_milestones_completed = (
+        total_milestones > 0
+        and
+        milestones.filter(
+            status=Milestone.Status.COMPLETED,
+            progress=100
+        ).count() == total_milestones
+    )
+
+    if all_milestones_completed:
+
+        if project.status != Project.Status.COMPLETED:
+
+            project.status = Project.Status.COMPLETED
+
+            project.save(
+                update_fields=[
+                    "status",
+                    "updated_at"
+                ]
+            )
+
+    else:
+
+        # Only move a completed project back to IN_PROGRESS
+        # when its milestones are no longer all completed.
+        if project.status == Project.Status.COMPLETED:
+
+            project.status = Project.Status.IN_PROGRESS
+
+            project.save(
+                update_fields=[
+                    "status",
+                    "updated_at"
+                ]
+            )
 
 
 # =========================================================
@@ -19,7 +85,9 @@ from milestones.serializers import MilestoneSerializer
 
 class ProjectListCreateView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated
+    ]
 
     def get(self, request):
 
@@ -36,8 +104,8 @@ class ProjectListCreateView(APIView):
             )
         )
 
-        # Freelancers should not see their own
-        # projects as projects they can apply to.
+        # Freelancers should not see their own projects
+        # as projects they can apply to.
         if request.user.role == "FREELANCER":
 
             projects = projects.exclude(
@@ -70,8 +138,6 @@ class ProjectListCreateView(APIView):
 
     def post(self, request):
 
-        # Both clients and freelancers can create
-        # projects according to the current project logic.
         if request.user.role not in [
             "CLIENT",
             "FREELANCER"
@@ -121,7 +187,9 @@ class ProjectListCreateView(APIView):
 
 class MyProjectsView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated
+    ]
 
     def get(self, request):
 
@@ -140,21 +208,54 @@ class MyProjectsView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        projects = (
-            Project.objects
-            .filter(
-                client=request.user
+        # -------------------------------------------------
+        # CLIENT
+        # -------------------------------------------------
+
+        if request.user.role == "CLIENT":
+
+            projects = (
+                Project.objects
+                .filter(
+                    client=request.user
+                )
+                .prefetch_related(
+                    "required_skills"
+                )
+                .select_related(
+                    "client"
+                )
+                .order_by(
+                    "-created_at"
+                )
             )
-            .prefetch_related(
-                "required_skills"
+
+        # -------------------------------------------------
+        # FREELANCER
+        #
+        # Show projects where the freelancer is assigned
+        # through an accepted proposal or workspace.
+        # -------------------------------------------------
+
+        else:
+
+            projects = (
+                Project.objects
+                .filter(
+                    proposals__freelancer=request.user,
+                    proposals__status="ACCEPTED"
+                )
+                .prefetch_related(
+                    "required_skills"
+                )
+                .select_related(
+                    "client"
+                )
+                .distinct()
+                .order_by(
+                    "-created_at"
+                )
             )
-            .select_related(
-                "client"
-            )
-            .order_by(
-                "-created_at"
-            )
-        )
 
         serializer = ProjectSerializer(
             projects,
@@ -176,9 +277,15 @@ class MyProjectsView(APIView):
 
 class ProjectDetailView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated
+    ]
 
-    def get(self, request, project_id):
+    def get(
+        self,
+        request,
+        project_id
+    ):
 
         project = get_object_or_404(
             Project.objects
@@ -189,6 +296,11 @@ class ProjectDetailView(APIView):
                 "required_skills"
             ),
             id=project_id
+        )
+
+        # Keep project status synchronized with milestones.
+        sync_project_completion(
+            project
         )
 
         serializer = ProjectSerializer(
@@ -203,7 +315,11 @@ class ProjectDetailView(APIView):
             status=status.HTTP_200_OK
         )
 
-    def put(self, request, project_id):
+    def put(
+        self,
+        request,
+        project_id
+    ):
 
         project = get_object_or_404(
             Project,
@@ -238,7 +354,11 @@ class ProjectDetailView(APIView):
             status=status.HTTP_400_BAD_REQUEST
         )
 
-    def delete(self, request, project_id):
+    def delete(
+        self,
+        request,
+        project_id
+    ):
 
         project = get_object_or_404(
             Project,
@@ -264,20 +384,32 @@ class ProjectDetailView(APIView):
 
 class ProjectMilestoneListCreateView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated
+    ]
 
-    def get(self, request, project_id):
+    def get(
+        self,
+        request,
+        project_id
+    ):
 
         project = get_object_or_404(
             Project,
             id=project_id
         )
 
-        # Only the project owner or the freelancer
-        # whose proposal was accepted can view milestones.
+        # -------------------------------------------------
+        # CLIENT
+        # -------------------------------------------------
+
         is_project_owner = (
             project.client_id == request.user.id
         )
+
+        # -------------------------------------------------
+        # ACCEPTED FREELANCER
+        # -------------------------------------------------
 
         is_accepted_freelancer = (
             project.proposals.filter(
@@ -286,10 +418,23 @@ class ProjectMilestoneListCreateView(APIView):
             ).exists()
         )
 
+        # -------------------------------------------------
+        # WORKSPACE FREELANCER
+        # -------------------------------------------------
+
+        is_workspace_freelancer = (
+            ProjectWorkspace.objects.filter(
+                project=project,
+                freelancer=request.user
+            ).exists()
+        )
+
         if not (
             is_project_owner
             or
             is_accepted_freelancer
+            or
+            is_workspace_freelancer
         ):
 
             return Response(
@@ -323,17 +468,18 @@ class ProjectMilestoneListCreateView(APIView):
             status=status.HTTP_200_OK
         )
 
-    def post(self, request, project_id):
+    def post(
+        self,
+        request,
+        project_id
+    ):
 
         project = get_object_or_404(
             Project,
             id=project_id
         )
 
-        # -------------------------------------------------
-        # ONLY PROJECT OWNER CAN CREATE MILESTONES
-        # -------------------------------------------------
-
+        # Only client can create milestones.
         if project.client_id != request.user.id:
 
             return Response(
@@ -346,10 +492,8 @@ class ProjectMilestoneListCreateView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # -------------------------------------------------
-        # PROJECT MUST BE IN PROGRESS
-        # -------------------------------------------------
-
+        # Milestones can only be created while project
+        # is in progress.
         if project.status != Project.Status.IN_PROGRESS:
 
             return Response(
@@ -364,8 +508,6 @@ class ProjectMilestoneListCreateView(APIView):
 
         data = request.data.copy()
 
-        # Project is determined from URL,
-        # so the frontend does not need to send it.
         data["project"] = project.id
 
         serializer = MilestoneSerializer(
@@ -397,7 +539,9 @@ class ProjectMilestoneListCreateView(APIView):
 
 class MilestoneDetailView(APIView):
 
-    permission_classes = [IsAuthenticated]
+    permission_classes = [
+        IsAuthenticated
+    ]
 
     def get_object(
         self,
@@ -422,15 +566,33 @@ class MilestoneDetailView(APIView):
 
         project = milestone.project
 
-        # Project owner
+        # Client
         if project.client_id == request.user.id:
             return True
 
         # Accepted freelancer
-        return project.proposals.filter(
-            freelancer=request.user,
-            status="ACCEPTED"
-        ).exists()
+        is_accepted_freelancer = (
+            project.proposals.filter(
+                freelancer=request.user,
+                status="ACCEPTED"
+            ).exists()
+        )
+
+        if is_accepted_freelancer:
+            return True
+
+        # Workspace freelancer
+        is_workspace_freelancer = (
+            ProjectWorkspace.objects.filter(
+                project=project,
+                freelancer=request.user
+            ).exists()
+        )
+
+        if is_workspace_freelancer:
+            return True
+
+        return False
 
     def get(
         self,
@@ -488,18 +650,24 @@ class MilestoneDetailView(APIView):
 
         if project.client_id == request.user.id:
 
-            # Client can update milestone details.
-            # Client cannot directly update progress.
-
             allowed_data = request.data.copy()
+
+            # -------------------------------------------------
+            # CLIENT CAN CHANGE STATUS.
+            #
+            # Client cannot directly change progress.
+            # Progress belongs to the freelancer.
+            # -------------------------------------------------
 
             if "progress" in allowed_data:
 
                 return Response(
                     {
                         "detail": (
-                            "Only the assigned freelancer "
-                            "can update milestone progress."
+                            "The client cannot directly "
+                            "update milestone progress. "
+                            "Progress is updated by the "
+                            "assigned freelancer."
                         )
                     },
                     status=status.HTTP_403_FORBIDDEN
@@ -517,12 +685,33 @@ class MilestoneDetailView(APIView):
 
         else:
 
-            accepted = project.proposals.filter(
-                freelancer=request.user,
-                status="ACCEPTED"
-            ).exists()
+            # -------------------------------------------------
+            # Check accepted proposal
+            # -------------------------------------------------
 
-            if not accepted:
+            accepted = (
+                project.proposals.filter(
+                    freelancer=request.user,
+                    status="ACCEPTED"
+                ).exists()
+            )
+
+            # -------------------------------------------------
+            # Check workspace
+            # -------------------------------------------------
+
+            assigned_through_workspace = (
+                ProjectWorkspace.objects.filter(
+                    project=project,
+                    freelancer=request.user
+                ).exists()
+            )
+
+            if not (
+                accepted
+                or
+                assigned_through_workspace
+            ):
 
                 return Response(
                     {
@@ -534,7 +723,12 @@ class MilestoneDetailView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-            # Freelancer can update only progress/status.
+            # -------------------------------------------------
+            # Freelancer can ONLY update progress.
+            #
+            # Freelancer CANNOT update status.
+            # -------------------------------------------------
+
             allowed_data = {}
 
             if "progress" in request.data:
@@ -543,10 +737,19 @@ class MilestoneDetailView(APIView):
                     request.data["progress"]
                 )
 
+            # Explicitly reject status updates.
             if "status" in request.data:
 
-                allowed_data["status"] = (
-                    request.data["status"]
+                return Response(
+                    {
+                        "detail": (
+                            "Freelancers can update "
+                            "milestone progress only. "
+                            "The client reviews and changes "
+                            "the milestone status."
+                        )
+                    },
+                    status=status.HTTP_403_FORBIDDEN
                 )
 
             if not allowed_data:
@@ -555,7 +758,7 @@ class MilestoneDetailView(APIView):
                     {
                         "detail": (
                             "Freelancers can update "
-                            "progress and status only."
+                            "progress only."
                         )
                     },
                     status=status.HTTP_400_BAD_REQUEST
@@ -567,9 +770,19 @@ class MilestoneDetailView(APIView):
                 partial=True
             )
 
+        # =================================================
+        # VALIDATE + SAVE
+        # =================================================
+
         if serializer.is_valid():
 
             updated_milestone = serializer.save()
+
+            # Recalculate project status after a client
+            # review or freelancer progress update.
+            sync_project_completion(
+                project
+            )
 
             return Response(
                 MilestoneSerializer(
@@ -595,7 +808,7 @@ class MilestoneDetailView(APIView):
             milestone_id
         )
 
-        # Only project owner can delete milestones.
+        # Only client can delete.
         if milestone.project.client_id != request.user.id:
 
             return Response(
@@ -608,7 +821,14 @@ class MilestoneDetailView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        project = milestone.project
+
         milestone.delete()
+
+        # Recalculate project status after deletion.
+        sync_project_completion(
+            project
+        )
 
         return Response(
             {

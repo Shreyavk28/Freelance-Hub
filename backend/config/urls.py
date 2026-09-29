@@ -1,58 +1,85 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 
 
 urlpatterns = [
 
-    # Django Admin
+    # =====================================================
+    # ADMIN
+    # =====================================================
+
     path(
         "admin/",
         admin.site.urls
     ),
 
-    # Authentication
+    # =====================================================
+    # AUTHENTICATION
+    # =====================================================
+
     path(
         "api/auth/",
         include("accounts.urls")
     ),
 
-    # Profiles
+    # =====================================================
+    # PROFILES
+    # =====================================================
+
     path(
         "api/profiles/",
         include("profiles.urls")
     ),
 
-    # Skills
+    # =====================================================
+    # SKILLS
+    # =====================================================
+
     path(
         "api/skills/",
         include("skills.urls")
     ),
 
-    # Projects
+    # =====================================================
+    # PROJECTS
+    # =====================================================
+
     path(
         "api/projects/",
         include("projects.urls")
     ),
 
-    # Proposals
+    # =====================================================
+    # PROPOSALS
+    # =====================================================
+
     path(
         "api/proposals/",
         include("proposals.urls")
     ),
 
-    # Collaborations
+    # =====================================================
+    # COLLABORATIONS
+    # =====================================================
+
     path(
         "api/collaborations/",
         include("collaborations.urls")
     ),
 
-    # Workspaces
+    # =====================================================
+    # WORKSPACES
+    # =====================================================
+
     path(
         "api/workspaces/",
         include("workspace.urls")
     ),
 
-    # Milestones
+    # =====================================================
+    # MILESTONES
+    # =====================================================
+
     path(
         "api/milestones/",
         include("milestones.urls")

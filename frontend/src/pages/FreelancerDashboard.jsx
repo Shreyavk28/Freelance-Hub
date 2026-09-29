@@ -1,93 +1,59 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
-import api from "../services/api";
 
-import "./Dashboard.css";
-import "./FreelancerDashboard.css";
+import api from "../services/api";
 import FreelancerNavbar from "../components/FreelancerNavbar";
 
+import "./FreelancerInvitations.css";
 
-function FreelancerDashboard() {
+
+function FreelancerInvitations() {
 
     const navigate = useNavigate();
-
-    const { user, logout } = useAuth();
-
-    const [projects, setProjects] = useState([]);
-
-    const [proposals, setProposals] = useState([]);
 
     const [invitations, setInvitations] = useState([]);
 
     const [loading, setLoading] = useState(true);
-
     const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
+
+    const [processingId, setProcessingId] = useState(null);
 
 
-    // =========================================================
-    // LOAD DASHBOARD DATA
-    // =========================================================
+    // =================================================
+    // FETCH INVITATIONS
+    // =================================================
 
     useEffect(() => {
 
-        fetchDashboardData();
+        fetchInvitations();
 
     }, []);
 
 
-    const fetchDashboardData = async () => {
+    const fetchInvitations = async () => {
 
         try {
 
             setLoading(true);
-
             setError("");
 
-
-            const [
-                projectsResponse,
-                proposalsResponse,
-                invitationsResponse
-            ] = await Promise.all([
-
-                api.get("/projects/"),
-
-                api.get("/proposals/my/"),
-
-                api.get("/collaborations/freelancer/")
-
-            ]);
-
-
-            setProjects(
-                projectsResponse.data
+            const response = await api.get(
+                "/collaborations/freelancer/"
             );
 
-            setProposals(
-                proposalsResponse.data
-            );
-
-            setInvitations(
-                Array.isArray(
-                    invitationsResponse.data
-                )
-                    ? invitationsResponse.data
-                    : []
-            );
-
+            setInvitations(response.data);
 
         } catch (error) {
 
             console.error(
-                "Freelancer dashboard error:",
+                "Error loading invitations:",
                 error
             );
 
-
             setError(
                 error.response?.data?.detail ||
-                "Unable to load dashboard data."
+                "Unable to load invitations."
             );
 
         } finally {
@@ -98,628 +64,687 @@ function FreelancerDashboard() {
     };
 
 
-    // =========================================================
-    // LOGOUT
-    // =========================================================
+    // =================================================
+    // INVITATION DECISION
+    // =================================================
 
-    const handleLogout = () => {
+    const handleDecision = async (
+        invitationId,
+        decision
+    ) => {
 
-        logout();
+        try {
 
-        navigate("/login");
+            setProcessingId(invitationId);
+
+            setError("");
+            setSuccess("");
+
+            const response = await api.patch(
+                `/collaborations/${invitationId}/decision/`,
+                {
+                    status: decision,
+                }
+            );
+
+
+            if (decision === "ACCEPTED") {
+
+                setSuccess(
+                    "Invitation accepted successfully."
+                );
+
+            } else {
+
+                setSuccess(
+                    "Invitation rejected successfully."
+                );
+
+            }
+
+
+            // -----------------------------------------
+            // UPDATE INVITATION IMMEDIATELY
+            // -----------------------------------------
+
+            setInvitations((current) =>
+                current.map((invitation) => {
+
+                    if (
+                        invitation.id !==
+                        invitationId
+                    ) {
+                        return invitation;
+                    }
+
+
+                    return {
+                        ...invitation,
+
+                        status:
+                            response.data.status ||
+                            decision,
+
+                        display_status:
+                            response.data.display_status ||
+                            decision,
+
+                        project_status:
+                            response.data.project_status ||
+                            invitation.project_status,
+                    };
+
+                })
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Invitation decision error:",
+                error
+            );
+
+            setError(
+                error.response?.data?.detail ||
+                "Unable to process invitation."
+            );
+
+        } finally {
+
+            setProcessingId(null);
+
+        }
 
     };
 
 
-    // =========================================================
-    // STATISTICS
-    // =========================================================
+    // =================================================
+    // OPEN WORKSPACE
+    // =================================================
 
-    const totalProposals =
-        proposals.length;
+    const handleOpenWorkspace = (
+        projectId
+    ) => {
 
+        navigate(
+            `/workspace/${projectId}`
+        );
 
-    const activeProposals =
-        proposals.filter(
-            (proposal) =>
-                proposal.status === "PENDING"
-        ).length;
-
-
-    const acceptedProposals =
-        proposals.filter(
-            (proposal) =>
-                proposal.status === "ACCEPTED"
-        ).length;
+    };
 
 
-    const pendingInvitations =
-        invitations.filter(
-            (invitation) =>
-                invitation.status === "PENDING"
-        ).length;
+    // =================================================
+    // FORMAT DATE
+    // =================================================
+
+    const formatDate = (date) => {
+
+        if (!date) {
+
+            return "Not available";
+
+        }
 
 
-    const completedProjects = 0;
+        return new Date(date).toLocaleDateString(
+            "en-IN",
+            {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+            }
+        );
+
+    };
 
 
-    // =========================================================
-    // RECOMMENDED PROJECTS
-    // =========================================================
+    // =================================================
+    // STATUS
+    // =================================================
 
-    const recommendedProjects =
-        [...projects]
-            .sort(
-                (a, b) =>
-                    (b.skill_match_percentage || 0) -
-                    (a.skill_match_percentage || 0)
-            )
-            .slice(0, 3);
+    const getDisplayStatus = (invitation) => {
+
+        /*
+         * display_status comes from the backend.
+         *
+         * Fallback to invitation.status so that
+         * the page still works with older API data.
+         */
+
+        return (
+            invitation.display_status ||
+            invitation.status
+        );
+
+    };
 
 
-    // =========================================================
+    const getStatusClass = (status) => {
+
+        return status
+            ?.toLowerCase()
+            .replace(/_/g, "-");
+
+    };
+
+
+    // =================================================
     // RENDER
-    // =========================================================
+    // =================================================
 
     return (
 
-        <div className="dashboard-page">
+        <div className="invitations-page">
 
+            {/* =========================================
+                NAVBAR
+            ========================================== */}
 
             <FreelancerNavbar />
 
 
-            {/* =================================================
+            {/* =========================================
                 MAIN
-            ================================================= */}
+            ========================================== */}
 
-            <main className="dashboard-content">
+            <main className="invitations-container">
 
 
-                {/* =================================================
-                    WELCOME
-                ================================================= */}
+                {/* =====================================
+                    HEADER
+                ====================================== */}
 
-                <section className="dashboard-welcome">
-
+                <div className="invitations-header">
 
                     <div>
 
-
-                        <p className="dashboard-label">
-                            FREELANCER DASHBOARD
+                        <p className="invitations-eyebrow">
+                            FREELANCER WORKSPACE
                         </p>
 
 
                         <h1>
-                            Welcome back,{" "}
-                            {user?.username} 👋
+                            Project Invitations
                         </h1>
 
 
                         <p>
-                            Discover projects that match
-                            your skills and grow your
-                            freelance career.
+                            Review invitations from clients
+                            and decide which projects you
+                            want to work on.
                         </p>
-
 
                     </div>
 
 
                     <button
-                        className="primary-button"
-                        onClick={() =>
-                            navigate(
-                                "/browse-projects"
-                            )
-                        }
+                        className="refresh-button"
+                        onClick={fetchInvitations}
+                        disabled={loading}
                     >
-                        Browse Projects
+
+                        {loading
+                            ? "Refreshing..."
+                            : "Refresh"
+                        }
+
                     </button>
 
+                </div>
 
-                </section>
 
+                {/* =====================================
+                    SUCCESS
+                ====================================== */}
 
-                {/* =================================================
-                    ERROR
-                ================================================= */}
+                {success && (
 
-                {error && (
+                    <div className="invitation-success">
 
-                    <div className="dashboard-error">
-                        {error}
+                        {success}
+
                     </div>
 
                 )}
 
 
-                {/* =================================================
-                    STATISTICS
-                ================================================= */}
+                {/* =====================================
+                    ERROR
+                ====================================== */}
 
-                <section className="dashboard-stats">
+                {error && (
+
+                    <div className="invitation-error">
+
+                        {error}
+
+                    </div>
+
+                )}
 
 
-                    <div className="stat-card">
+                {/* =====================================
+                    SECTION
+                ====================================== */}
 
-                        <span>
-                            Total Proposals
-                        </span>
+                <section className="invitation-section">
 
-                        <strong>
-                            {loading
-                                ? "..."
-                                : totalProposals}
-                        </strong>
+
+                    <div className="section-heading">
+
+                        <h2>
+                            Received Invitations
+                        </h2>
+
+
+                        <p>
+                            Invitations sent by clients
+                            for their projects.
+                        </p>
 
                     </div>
 
 
-                    <div className="stat-card">
-
-                        <span>
-                            Active Proposals
-                        </span>
-
-                        <strong>
-                            {loading
-                                ? "..."
-                                : activeProposals}
-                        </strong>
-
-                    </div>
-
-
-                    <div className="stat-card">
-
-                        <span>
-                            Accepted Proposals
-                        </span>
-
-                        <strong>
-                            {loading
-                                ? "..."
-                                : acceptedProposals}
-                        </strong>
-
-                    </div>
-
-
-                    <div className="stat-card">
-
-                        <span>
-                            Invitations
-                        </span>
-
-                        <strong>
-                            {loading
-                                ? "..."
-                                : pendingInvitations}
-                        </strong>
-
-                    </div>
-
-
-                    <div className="stat-card">
-
-                        <span>
-                            Completed Projects
-                        </span>
-
-                        <strong>
-                            {completedProjects}
-                        </strong>
-
-                    </div>
-
-
-                </section>
-
-
-                {/* =================================================
-                    QUICK ACTIONS
-                ================================================= */}
-
-                <section className="dashboard-section">
-
-
-                    <div className="section-header">
-
-
-                        <div>
-
-                            <h2>
-                                Quick Actions
-                            </h2>
-
-                            <p>
-                                Manage your freelance work.
-                            </p>
-
-                        </div>
-
-
-                    </div>
-
-
-                    <div className="quick-actions">
-
-
-                        {/* Browse Projects */}
-
-                        <button
-                            className="action-card"
-                            onClick={() =>
-                                navigate(
-                                    "/browse-projects"
-                                )
-                            }
-                        >
-
-                            <span className="action-icon">
-                                🔍
-                            </span>
-
-
-                            <div>
-
-                                <h3>
-                                    Browse Projects
-                                </h3>
-
-                                <p>
-                                    Find projects that
-                                    match your skills.
-                                </p>
-
-                            </div>
-
-                        </button>
-
-
-                        {/* My Proposals */}
-
-                        <button
-                            className="action-card"
-                            onClick={() =>
-                                navigate(
-                                    "/proposals"
-                                )
-                            }
-                        >
-
-                            <span className="action-icon">
-                                📄
-                            </span>
-
-
-                            <div>
-
-                                <h3>
-                                    My Proposals
-                                </h3>
-
-                                <p>
-                                    Track the proposals
-                                    you have submitted.
-                                </p>
-
-                            </div>
-
-                        </button>
-
-
-                        {/* Invitations */}
-
-                        <button
-                            className="action-card"
-                            onClick={() =>
-                                navigate(
-                                    "/invitations"
-                                )
-                            }
-                        >
-
-                            <span className="action-icon">
-                                📩
-                            </span>
-
-
-                            <div>
-
-                                <h3>
-                                    Invitations
-
-                                    {pendingInvitations >
-                                        0 && (
-                                        <span className="quick-action-count">
-                                            {pendingInvitations}
-                                        </span>
-                                    )}
-
-                                </h3>
-
-                                <p>
-                                    Review project
-                                    invitations from clients.
-                                </p>
-
-                            </div>
-
-                        </button>
-
-
-                        {/* Profile */}
-
-                        <button
-                            className="action-card"
-                            onClick={() =>
-                                navigate(
-                                    "/profile/freelancer"
-                                )
-                            }
-                        >
-
-                            <span className="action-icon">
-                                👤
-                            </span>
-
-
-                            <div>
-
-                                <h3>
-                                    My Profile
-                                </h3>
-
-                                <p>
-                                    Update your skills,
-                                    experience and profile.
-                                </p>
-
-                            </div>
-
-                        </button>
-
-
-                    </div>
-
-
-                </section>
-
-
-                {/* =================================================
-                    RECOMMENDED PROJECTS
-                ================================================= */}
-
-                <section className="dashboard-section">
-
-
-                    <div className="section-header">
-
-
-                        <div>
-
-                            <h2>
-                                Recommended Projects
-                            </h2>
-
-                            <p>
-                                Projects ranked by your
-                                skill match.
-                            </p>
-
-                        </div>
-
-
-                        <button
-                            className="text-button"
-                            onClick={() =>
-                                navigate(
-                                    "/browse-projects"
-                                )
-                            }
-                        >
-                            View all
-                        </button>
-
-
-                    </div>
-
+                    {/* =================================
+                        LOADING
+                    ================================== */}
 
                     {loading ? (
 
-                        <div className="empty-state">
+                        <div className="invitation-empty">
 
-                            <h3>
-                                Loading projects...
-                            </h3>
+                            <div className="invitation-spinner"></div>
+
+                            <p>
+                                Loading invitations...
+                            </p>
 
                         </div>
 
-                    ) : recommendedProjects.length === 0 ? (
 
-                        <div className="empty-state">
+                    ) : invitations.length === 0 ? (
 
+                        /* =================================
+                            EMPTY
+                        ================================== */
 
-                            <div className="empty-icon">
-                                🔍
+                        <div className="invitation-empty">
+
+                            <div className="empty-invitation-icon">
+                                ✉
                             </div>
 
 
                             <h3>
-                                No projects available
+                                No invitations yet
                             </h3>
 
 
                             <p>
-                                New projects will appear
-                                here when clients post them.
+                                When a client invites you
+                                to work on a project,
+                                the invitation will appear
+                                here.
                             </p>
-
-
-                            <button
-                                className="primary-button"
-                                onClick={() =>
-                                    navigate(
-                                        "/browse-projects"
-                                    )
-                                }
-                            >
-                                Browse Projects
-                            </button>
-
 
                         </div>
 
+
                     ) : (
 
-                        <div className="freelancer-project-list">
+                        /* =================================
+                            INVITATIONS
+                        ================================== */
+
+                        <div className="invitation-list">
+
+                            {invitations.map(
+                                (invitation) => {
+
+                                    const displayStatus =
+                                        getDisplayStatus(
+                                            invitation
+                                        );
 
 
-                            {recommendedProjects.map(
-                                (project) => (
+                                    return (
 
-                                    <div
-                                        className="freelancer-project-card"
-                                        key={project.id}
-                                        onClick={() =>
-                                            navigate(
-                                                `/projects/${project.id}`
-                                            )
-                                        }
-                                        role="button"
-                                        tabIndex="0"
-                                    >
+                                        <article
+                                            className="invitation-card"
+                                            key={invitation.id}
+                                        >
 
 
-                                        <div className="freelancer-project-main">
+                                            {/* ==================
+                                                CARD HEADER
+                                            =================== */}
+
+                                            <div className="invitation-card-header">
+
+                                                <div>
+
+                                                    <span className="invitation-label">
+                                                        PROJECT INVITATION
+                                                    </span>
 
 
-                                            <div className="freelancer-project-title">
+                                                    <h3>
+                                                        {
+                                                            invitation.project_title
+                                                        }
+                                                    </h3>
+
+                                                </div>
 
 
-                                                <h3>
-                                                    {project.title}
-                                                </h3>
+                                                {/* =================================
+                                                    STATUS BADGE
+                                                ================================== */}
 
+                                                <span
+                                                    className={`invitation-status ${getStatusClass(
+                                                        displayStatus
+                                                    )}`}
+                                                >
 
-                                                <span className="match-badge">
-
-                                                    {
-                                                        project.skill_match_percentage
-                                                    }%
-
-                                                    {" "}
-
-                                                    Match
+                                                    {displayStatus}
 
                                                 </span>
-
 
                                             </div>
 
 
-                                            <p>
-                                                {
-                                                    project.description
-                                                }
-                                            </p>
+                                            {/* ==================
+                                                DETAILS
+                                            =================== */}
+
+                                            <div className="invitation-details">
 
 
-                                            <div className="project-meta">
+                                                <div>
+
+                                                    <span>
+                                                        Invited by
+                                                    </span>
 
 
-                                                <span>
-                                                    {
-                                                        project.budget_type
-                                                    }
-                                                </span>
+                                                    <strong>
+                                                        {
+                                                            invitation.client_username
+                                                        }
+                                                    </strong>
+
+                                                </div>
 
 
-                                                <span>
-                                                    ₹
-                                                    {
-                                                        project.budget_amount
-                                                    }
-                                                </span>
+                                                <div>
+
+                                                    <span>
+                                                        Received
+                                                    </span>
 
 
-                                                <span>
-                                                    Due:{" "}
-                                                    {
-                                                        project.deadline
-                                                    }
-                                                </span>
+                                                    <strong>
+                                                        {formatDate(
+                                                            invitation.created_at
+                                                        )}
+                                                    </strong>
 
+                                                </div>
 
                                             </div>
 
 
-                                            <div className="project-skills">
+                                            {/* ==================
+                                                MESSAGE
+                                            =================== */}
+
+                                            {invitation.message && (
+
+                                                <div className="invitation-message">
+
+                                                    <h4>
+                                                        Message from client
+                                                    </h4>
 
 
-                                                {project.required_skill_names?.map(
-                                                    (skill) => (
+                                                    <p>
+                                                        {
+                                                            invitation.message
+                                                        }
+                                                    </p>
 
-                                                        <span
-                                                            key={skill}
-                                                            className="skill-tag"
-                                                        >
-                                                            {skill}
+                                                </div>
+
+                                            )}
+
+
+                                            {/* ==================
+                                                PENDING
+                                            =================== */}
+
+                                            {displayStatus ===
+                                                "PENDING" && (
+
+                                                <div className="invitation-actions">
+
+
+                                                    <button
+                                                        className="reject-button"
+                                                        disabled={
+                                                            processingId ===
+                                                            invitation.id
+                                                        }
+                                                        onClick={() =>
+                                                            handleDecision(
+                                                                invitation.id,
+                                                                "REJECTED"
+                                                            )
+                                                        }
+                                                    >
+
+                                                        {processingId ===
+                                                        invitation.id
+                                                            ? "Processing..."
+                                                            : "Reject"
+                                                        }
+
+                                                    </button>
+
+
+                                                    <button
+                                                        className="accept-button"
+                                                        disabled={
+                                                            processingId ===
+                                                            invitation.id
+                                                        }
+                                                        onClick={() =>
+                                                            handleDecision(
+                                                                invitation.id,
+                                                                "ACCEPTED"
+                                                            )
+                                                        }
+                                                    >
+
+                                                        {processingId ===
+                                                        invitation.id
+                                                            ? "Processing..."
+                                                            : "Accept Invitation"
+                                                        }
+
+                                                    </button>
+
+                                                </div>
+
+                                            )}
+
+
+                                            {/* ==================
+                                                ACCEPTED
+                                            =================== */}
+
+                                            {displayStatus ===
+                                                "ACCEPTED" && (
+
+                                                <div className="accepted-section">
+
+
+                                                    <div className="accepted-message">
+
+                                                        <span>
+                                                            ✓
                                                         </span>
 
-                                                    )
-                                                )}
+
+                                                        <p>
+                                                            You accepted
+                                                            this project
+                                                            invitation.
+                                                        </p>
+
+                                                    </div>
 
 
-                                            </div>
+                                                    <button
+                                                        className="workspace-button"
+                                                        onClick={() =>
+                                                            handleOpenWorkspace(
+                                                                invitation.project
+                                                            )
+                                                        }
+                                                    >
+
+                                                        Open Workspace
+
+                                                        <span>
+                                                            →
+                                                        </span>
+
+                                                    </button>
+
+                                                </div>
+
+                                            )}
 
 
-                                        </div>
+                                            {/* ==================
+                                                COMPLETED
+                                            =================== */}
+
+                                            {displayStatus ===
+                                                "COMPLETED" && (
+
+                                                <div className="accepted-section">
 
 
-                                        <div>
+                                                    <div className="accepted-message">
+
+                                                        <span>
+                                                            ✓
+                                                        </span>
 
 
-                                            <span
-                                                className={
-                                                    `status-badge status-` +
-                                                    `${project.status.toLowerCase()}`
-                                                }
-                                            >
-                                                {
-                                                    project.status.replace(
-                                                        "_",
-                                                        " "
-                                                    )
-                                                }
-                                            </span>
+                                                        <p>
+                                                            This project
+                                                            has been
+                                                            completed.
+                                                        </p>
+
+                                                    </div>
 
 
-                                        </div>
+                                                    <button
+                                                        className="workspace-button"
+                                                        onClick={() =>
+                                                            handleOpenWorkspace(
+                                                                invitation.project
+                                                            )
+                                                        }
+                                                    >
+
+                                                        Open Workspace
+
+                                                        <span>
+                                                            →
+                                                        </span>
+
+                                                    </button>
+
+                                                </div>
+
+                                            )}
 
 
-                                    </div>
+                                            {/* ==================
+                                                CANCELLED
+                                            =================== */}
 
-                                )
+                                            {displayStatus ===
+                                                "CANCELLED" && (
+
+                                                <div className="rejected-message">
+
+                                                    <span>
+                                                        ✕
+                                                    </span>
+
+
+                                                    <p>
+                                                        This project
+                                                        has been
+                                                        cancelled.
+                                                    </p>
+
+                                                </div>
+
+                                            )}
+
+
+                                            {/* ==================
+                                                REJECTED
+                                            =================== */}
+
+                                            {displayStatus ===
+                                                "REJECTED" && (
+
+                                                <div className="rejected-message">
+
+                                                    <span>
+                                                        ✕
+                                                    </span>
+
+
+                                                    <p>
+                                                        You rejected
+                                                        this project
+                                                        invitation.
+                                                    </p>
+
+                                                </div>
+
+                                            )}
+
+                                        </article>
+
+                                    );
+
+                                }
                             )}
-
 
                         </div>
 
                     )}
 
-
                 </section>
-
 
             </main>
 
         </div>
+
     );
+
 }
 
 
-export default FreelancerDashboard;
+export default FreelancerInvitations;

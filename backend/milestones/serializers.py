@@ -3,7 +3,9 @@ from rest_framework import serializers
 from .models import Milestone
 
 
-class MilestoneSerializer(serializers.ModelSerializer):
+class MilestoneSerializer(
+    serializers.ModelSerializer
+):
 
     project_title = serializers.CharField(
         source="project.title",
@@ -11,6 +13,7 @@ class MilestoneSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+
         model = Milestone
 
         fields = [
@@ -29,25 +32,10 @@ class MilestoneSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "project",
             "project_title",
+            "status",
+            "progress",
             "created_at",
             "updated_at",
         ]
-
-    def validate_progress(self, value):
-
-        if value < 0 or value > 100:
-            raise serializers.ValidationError(
-                "Progress must be between 0 and 100."
-            )
-
-        return value
-
-    def validate_amount(self, value):
-
-        if value <= 0:
-            raise serializers.ValidationError(
-                "Amount must be greater than zero."
-            )
-
-        return value

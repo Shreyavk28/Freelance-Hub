@@ -4,6 +4,12 @@ from .views import (
     ProjectListCreateView,
     MyProjectsView,
     ProjectDetailView,
+)
+
+# Milestone views belong to the milestones app.
+# We import them here only so the frontend can continue
+# using /api/projects/<project_id>/milestones/
+from milestones.views import (
     ProjectMilestoneListCreateView,
     MilestoneDetailView,
 )
@@ -37,15 +43,18 @@ urlpatterns = [
     # MILESTONES
     # =========================================
 
+    # GET milestones
+    # POST milestone - CLIENT only
     path(
         "<int:project_id>/milestones/",
         ProjectMilestoneListCreateView.as_view(),
         name="project-milestones"
     ),
 
+    # GET individual milestone
     path(
         "<int:project_id>/milestones/<int:milestone_id>/",
         MilestoneDetailView.as_view(),
-        name="milestone-detail"
+        name="project-milestone-detail"
     ),
 ]

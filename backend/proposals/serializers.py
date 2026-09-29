@@ -15,6 +15,13 @@ class ProposalSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
+    project_status = serializers.CharField(
+        source="project.status",
+        read_only=True
+    )
+
+    display_status = serializers.SerializerMethodField()
+
     class Meta:
         model = Proposal
 
@@ -22,6 +29,8 @@ class ProposalSerializer(serializers.ModelSerializer):
             "id",
             "project",
             "project_title",
+            "project_status",
+            "display_status",
             "freelancer",
             "freelancer_username",
             "cover_letter",
@@ -37,7 +46,19 @@ class ProposalSerializer(serializers.ModelSerializer):
             "freelancer",
             "freelancer_username",
             "project_title",
+            "project_status",
+            "display_status",
             "status",
             "created_at",
             "updated_at",
         ]
+
+    def get_display_status(self, obj):
+
+        if obj.project.status == "COMPLETED":
+            return "COMPLETED"
+
+        if obj.project.status == "CANCELLED":
+            return "CANCELLED"
+
+        return obj.status

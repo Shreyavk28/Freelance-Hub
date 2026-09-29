@@ -1,20 +1,17 @@
 import { useEffect, useState } from "react";
+
 import api from "../services/api";
+import { useAuth } from "../context/AuthContext";
+
 import "./Milestones.css";
 
 
-function getUser() {
+function getStoredUser() {
     try {
-        const savedUser = localStorage.getItem("user");
-
-        if (!savedUser) {
-            return null;
-        }
-
-        return JSON.parse(savedUser);
-
-    } catch (error) {
-        console.error("Unable to read logged-in user:", error);
+        return JSON.parse(
+            localStorage.getItem("user")
+        );
+    } catch {
         return null;
     }
 }
@@ -22,10 +19,23 @@ function getUser() {
 
 export default function Milestones({
     projectId,
-    projectStatus
+    projectStatus,
+    onProjectStatusChange,
 }) {
 
-    const user = getUser();
+    // =====================================================
+    // USER
+    // =====================================================
+
+    const {
+        user: authUser
+    } = useAuth();
+
+    const storedUser =
+        getStoredUser();
+
+    const user =
+        authUser || storedUser;
 
     const isClient =
         user?.role === "CLIENT";
@@ -34,26 +44,74 @@ export default function Milestones({
         user?.role === "FREELANCER";
 
 
-    const [milestones, setMilestones] =
-        useState([]);
+    // =====================================================
+    // STATE
+    // =====================================================
 
-    const [loading, setLoading] =
-        useState(true);
+    const [
+        milestones,
+        setMilestones
+    ] = useState([]);
 
-    const [error, setError] =
-        useState("");
+    const [
+        loading,
+        setLoading
+    ] = useState(true);
 
-    const [showCreateForm, setShowCreateForm] =
-        useState(false);
+    const [
+        error,
+        setError
+    ] = useState("");
 
-    const [saving, setSaving] =
-        useState(false);
+    const [
+        message,
+        setMessage
+    ] = useState("");
 
-    const [creating, setCreating] =
-        useState(false);
+    const [
+        showCreateForm,
+        setShowCreateForm
+    ] = useState(false);
+
+    const [
+        creating,
+        setCreating
+    ] = useState(false);
+
+    const [
+        savingId,
+        setSavingId
+    ] = useState(null);
+
+    const [
+        deletingId,
+        setDeletingId
+    ] = useState(null);
+
+    const [
+        reviewingId,
+        setReviewingId
+    ] = useState(null);
+
+    /*
+     * Slider values are kept locally until
+     * the freelancer clicks Save Progress.
+     */
+
+    const [
+        draftProgress,
+        setDraftProgress
+    ] = useState({});
 
 
-    const [form, setForm] = useState({
+    // =====================================================
+    // CREATE FORM
+    // =====================================================
+
+    const [
+        form,
+        setForm
+    ] = useState({
         title: "",
         amount: "",
         due_date: "",
@@ -61,9 +119,9 @@ export default function Milestones({
     });
 
 
-    // =================================================
+    // =====================================================
     // LOAD MILESTONES
-    // =================================================
+    // =====================================================
 
     const loadMilestones = async () => {
 
@@ -76,14 +134,39 @@ export default function Milestones({
             setLoading(true);
             setError("");
 
-            const response = await api.get(
-                `/milestones/project/${projectId}/`
-            );
+            /*
+             * Keep your existing working endpoint.
+             */
 
-            setMilestones(
+            const response =
+                await api.get(
+                    `/projects/${projectId}/milestones/`
+                );
+
+            const data =
                 Array.isArray(response.data)
                     ? response.data
-                    : []
+                    : [];
+
+            setMilestones(data);
+
+            /*
+             * Initialize local slider values.
+             */
+
+            const progressMap = {};
+
+            data.forEach((milestone) => {
+
+                progressMap[milestone.id] =
+                    Number(
+                        milestone.progress || 0
+                    );
+
+            });
+
+            setDraftProgress(
+                progressMap
             );
 
         } catch (err) {
@@ -101,6 +184,7 @@ export default function Milestones({
         } finally {
 
             setLoading(false);
+
         }
     };
 
@@ -112,52 +196,76 @@ export default function Milestones({
     }, [projectId]);
 
 
-    // =================================================
+    // =====================================================
     // FORM CHANGE
-    // =================================================
+    // =====================================================
 
-    const handleChange = (event) => {
+    const handleChange = (
+        event
+    ) => {
 
         const {
             name,
             value
         } = event.target;
 
-        setForm((previous) => ({
-            ...previous,
-            [name]: value
-        }));
+        setForm(
+            previous => ({
+                ...previous,
+                [name]: value,
+            })
+        );
     };
 
 
-    // =================================================
+    // =====================================================
+    // RESET FORM
+    // =====================================================
+
+    const resetForm = () => {
+
+        setForm({
+            title: "",
+            amount: "",
+            due_date: "",
+            description: "",
+        });
+
+        setShowCreateForm(false);
+    };
+
+
+    // =====================================================
     // CREATE MILESTONE
     // CLIENT ONLY
-    // =================================================
+    // =====================================================
 
-    const handleCreate = async (event) => {
+    const handleCreate = async (
+        event
+    ) => {
 
         event.preventDefault();
 
         if (!isClient) {
 
             setError(
-                "Only the project owner can create milestones."
+                "Only the project client can create milestones."
             );
 
             return;
         }
 
-
-        if (projectStatus !== "IN_PROGRESS") {
+        if (
+            projectStatus !==
+            "IN_PROGRESS"
+        ) {
 
             setError(
-                "Milestones can only be created for projects that are in progress."
+                "Milestones can only be created when the project is in progress."
             );
 
             return;
         }
-
 
         if (!form.title.trim()) {
 
@@ -168,7 +276,6 @@ export default function Milestones({
             return;
         }
 
-
         if (!form.amount) {
 
             setError(
@@ -178,16 +285,16 @@ export default function Milestones({
             return;
         }
 
-
-        if (Number(form.amount) <= 0) {
+        if (
+            Number(form.amount) <= 0
+        ) {
 
             setError(
-                "Milestone amount must be greater than 0."
+                "Amount must be greater than zero."
             );
 
             return;
         }
-
 
         if (!form.due_date) {
 
@@ -198,39 +305,36 @@ export default function Milestones({
             return;
         }
 
-
         try {
 
             setCreating(true);
             setError("");
+            setMessage("");
 
-
-            const response = await api.post(
-                `/milestones/project/${projectId}/`,
+            await api.post(
+                `/projects/${projectId}/milestones/`,
                 {
-                    title: form.title.trim(),
-                    amount: form.amount,
-                    due_date: form.due_date,
-                    description: form.description.trim(),
+                    title:
+                        form.title.trim(),
+
+                    amount:
+                        Number(form.amount),
+
+                    due_date:
+                        form.due_date,
+
+                    description:
+                        form.description.trim(),
                 }
             );
 
+            setMessage(
+                "Milestone created successfully."
+            );
 
-            setMilestones((previous) => [
-                ...previous,
-                response.data
-            ]);
+            resetForm();
 
-
-            setForm({
-                title: "",
-                amount: "",
-                due_date: "",
-                description: "",
-            });
-
-
-            setShowCreateForm(false);
+            await loadMilestones();
 
         } catch (err) {
 
@@ -247,52 +351,120 @@ export default function Milestones({
         } finally {
 
             setCreating(false);
+
         }
     };
 
 
-    // =================================================
-    // UPDATE PROGRESS
+    // =====================================================
+    // SLIDER CHANGE
     // FREELANCER ONLY
-    // =================================================
+    // =====================================================
 
-    const handleProgress = async (
+    const handleProgressSlider = (
         milestoneId,
-        progress
+        event
+    ) => {
+
+        const value =
+            Number(
+                event.target.value
+            );
+
+        setDraftProgress(
+            previous => ({
+                ...previous,
+                [milestoneId]: value,
+            })
+        );
+    };
+
+
+    // =====================================================
+    // SAVE PROGRESS
+    // FREELANCER ONLY
+    // =====================================================
+
+    const handleSaveProgress = async (
+        milestone
     ) => {
 
         if (!isFreelancer) {
 
             setError(
-                "Only the assigned freelancer can update milestone progress."
+                "Only the assigned freelancer can update progress."
             );
 
             return;
         }
 
+        const newProgress =
+            Number(
+                draftProgress[milestone.id] ??
+                milestone.progress ??
+                0
+            );
 
         try {
 
-            setSaving(true);
-            setError("");
+            setSavingId(
+                milestone.id
+            );
 
+            setError("");
+            setMessage("");
+
+            /*
+             * IMPORTANT:
+             *
+             * This is the corrected URL.
+             */
 
             const response =
                 await api.patch(
-                    `/milestones/${milestoneId}/progress/`,
+                    `/milestones/${milestone.id}/progress/`,
                     {
-                        progress
+                        progress:
+                            newProgress,
                     }
                 );
 
-
-            setMilestones((previous) =>
-                previous.map((milestone) =>
-                    milestone.id === milestoneId
-                        ? response.data
-                        : milestone
-                )
+            setMilestones(
+                previous =>
+                    previous.map(
+                        item =>
+                            item.id ===
+                            milestone.id
+                                ? response.data
+                                : item
+                    )
             );
+
+            setDraftProgress(
+                previous => ({
+                    ...previous,
+                    [milestone.id]:
+                        Number(
+                            response.data.progress || 0
+                        ),
+                })
+            );
+
+            if (
+                newProgress === 100
+            ) {
+
+                setMessage(
+                    "Milestone submitted for client review."
+                );
+
+            } else {
+
+                setMessage(
+                    "Progress updated successfully."
+                );
+
+            }
 
         } catch (err) {
 
@@ -303,57 +475,153 @@ export default function Milestones({
 
             setError(
                 err.response?.data?.detail ||
+                err.response?.data?.progress ||
                 "Unable to update milestone progress."
             );
 
         } finally {
 
-            setSaving(false);
+            setSavingId(null);
+
         }
     };
 
 
-    // =================================================
+    // =====================================================
     // CLIENT REVIEW
-    // =================================================
+    // =====================================================
 
     const handleReview = async (
-        milestoneId,
-        decision
+        milestone,
+        action
     ) => {
 
         if (!isClient) {
 
             setError(
-                "Only the project owner can review a milestone."
+                "Only the project client can review milestones."
             );
 
             return;
         }
 
+        let confirmationMessage =
+            "";
+
+        if (
+            action === "approve"
+        ) {
+
+            confirmationMessage =
+                "Approve this milestone as completed?";
+
+        } else if (
+            action === "changes"
+        ) {
+
+            confirmationMessage =
+                "Request changes from the freelancer?";
+
+        } else if (
+            action === "cancel"
+        ) {
+
+            confirmationMessage =
+                "Cancel this milestone?";
+
+        }
+
+        const confirmed =
+            window.confirm(
+                confirmationMessage
+            );
+
+        if (!confirmed) {
+            return;
+        }
 
         try {
 
-            setSaving(true);
-            setError("");
+            setReviewingId(
+                milestone.id
+            );
 
+            setError("");
+            setMessage("");
+
+            /*
+             * Correct review URL.
+             */
 
             const response =
                 await api.patch(
-                    `/milestones/${milestoneId}/review/`,
+                    `/milestones/${milestone.id}/review/`,
                     {
-                        decision
+                        action,
                     }
                 );
 
+            const updatedMilestone =
+                response.data?.milestone;
 
-            setMilestones((previous) =>
-                previous.map((milestone) =>
-                    milestone.id === milestoneId
-                        ? response.data
-                        : milestone
-                )
-            );
+            if (
+                updatedMilestone
+            ) {
+
+                setMilestones(
+                    previous =>
+                        previous.map(
+                            item =>
+                                item.id ===
+                                milestone.id
+                                    ? updatedMilestone
+                                    : item
+                        )
+                );
+
+                setDraftProgress(
+                    previous => ({
+                        ...previous,
+                        [milestone.id]:
+                            Number(
+                                updatedMilestone.progress || 0
+                            ),
+                    })
+                );
+            }
+
+            if (
+                response.data?.project_status &&
+                onProjectStatusChange
+            ) {
+
+                onProjectStatusChange(
+                    response.data.project_status
+                );
+            }
+
+            if (
+                action === "approve"
+            ) {
+
+                setMessage(
+                    "Milestone approved successfully."
+                );
+
+            } else if (
+                action === "changes"
+            ) {
+
+                setMessage(
+                    "Changes requested from the freelancer."
+                );
+
+            } else {
+
+                setMessage(
+                    "Milestone cancelled successfully."
+                );
+            }
 
         } catch (err) {
 
@@ -364,59 +632,206 @@ export default function Milestones({
 
             setError(
                 err.response?.data?.detail ||
+                err.response?.data?.action ||
                 "Unable to review milestone."
             );
 
         } finally {
 
-            setSaving(false);
+            setReviewingId(null);
+
         }
     };
 
 
-    // =================================================
-    // HELPERS
-    // =================================================
+    // =====================================================
+    // DELETE
+    // CLIENT ONLY
+    // =====================================================
 
-    const formatStatus = (status) => {
+    const handleDelete = async (
+        milestoneId
+    ) => {
 
-        if (!status) {
-            return "";
+        if (!isClient) {
+
+            setError(
+                "Only the project client can delete milestones."
+            );
+
+            return;
         }
 
-        return status
-            .replaceAll("_", " ")
+        const confirmed =
+            window.confirm(
+                "Are you sure you want to delete this milestone?"
+            );
+
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+
+            setDeletingId(
+                milestoneId
+            );
+
+            setError("");
+            setMessage("");
+
+            /*
+             * IMPORTANT:
+             *
+             * Use the canonical milestones endpoint.
+             *
+             * This also avoids the old nested
+             * Project MilestoneDetailView.
+             */
+
+            await api.delete(
+                `/milestones/${milestoneId}/`
+            );
+
+            setMilestones(
+                previous =>
+                    previous.filter(
+                        milestone =>
+                            milestone.id !==
+                            milestoneId
+                    )
+            );
+
+            setDraftProgress(
+                previous => {
+
+                    const updated = {
+                        ...previous,
+                    };
+
+                    delete updated[
+                        milestoneId
+                    ];
+
+                    return updated;
+                }
+            );
+
+            setMessage(
+                "Milestone deleted successfully."
+            );
+
+        } catch (err) {
+
+            console.error(
+                "Delete milestone error:",
+                err
+            );
+
+            setError(
+                err.response?.data?.detail ||
+                "Unable to delete milestone."
+            );
+
+        } finally {
+
+            setDeletingId(null);
+
+        }
+    };
+
+
+    // =====================================================
+    // FORMAT STATUS
+    // =====================================================
+
+    const formatStatus = (
+        value
+    ) => {
+
+        if (!value) {
+            return "Not available";
+        }
+
+        return value
+            .replace(
+                /_/g,
+                " "
+            )
             .toLowerCase()
             .replace(
                 /\b\w/g,
-                (letter) => letter.toUpperCase()
+                letter =>
+                    letter.toUpperCase()
             );
     };
 
 
-    const formatAmount = (amount) => {
+    // =====================================================
+    // STATUS CLASS
+    // =====================================================
+
+    const getStatusClass = (
+        value
+    ) => {
+
+        if (!value) {
+            return "";
+        }
+
+        return value
+            .toLowerCase()
+            .replace(
+                /_/g,
+                "-"
+            );
+    };
+
+
+    // =====================================================
+    // FORMAT AMOUNT
+    // =====================================================
+
+    const formatAmount = (
+        amount
+    ) => {
 
         return new Intl.NumberFormat(
             "en-IN",
             {
                 style: "currency",
                 currency: "INR",
-                maximumFractionDigits: 2
+                maximumFractionDigits: 2,
             }
-        ).format(Number(amount || 0));
+        ).format(
+            Number(
+                amount || 0
+            )
+        );
     };
 
 
-    const formatDate = (date) => {
+    // =====================================================
+    // FORMAT DATE
+    // =====================================================
+
+    const formatDate = (
+        date
+    ) => {
 
         if (!date) {
-            return "-";
+            return "Not available";
         }
 
         const parsedDate =
-            new Date(`${date}T00:00:00`);
+            new Date(date);
 
-        if (Number.isNaN(parsedDate.getTime())) {
+        if (
+            Number.isNaN(
+                parsedDate.getTime()
+            )
+        ) {
+
             return date;
         }
 
@@ -425,17 +840,21 @@ export default function Milestones({
             {
                 day: "2-digit",
                 month: "short",
-                year: "numeric"
+                year: "numeric",
             }
         );
     };
 
 
+    // =====================================================
+    // SUMMARY
+    // =====================================================
+
     const completedCount =
         milestones.filter(
-            (milestone) =>
-                milestone.status === "COMPLETED" ||
-                Number(milestone.progress) === 100
+            milestone =>
+                milestone.status ===
+                "COMPLETED"
         ).length;
 
 
@@ -453,13 +872,14 @@ export default function Milestones({
                             milestone.progress || 0
                         ),
                     0
-                ) / milestones.length
+                ) /
+                milestones.length
             );
 
 
-    // =================================================
+    // =====================================================
     // LOADING
-    // =================================================
+    // =====================================================
 
     if (loading) {
 
@@ -477,17 +897,17 @@ export default function Milestones({
     }
 
 
-    // =================================================
-    // PAGE
-    // =================================================
+    // =====================================================
+    // MAIN
+    // =====================================================
 
     return (
 
         <section className="milestones-section">
 
-            {/* =========================================
+            {/* =================================================
                 HEADER
-            ========================================= */}
+            ================================================= */}
 
             <div className="milestones-header">
 
@@ -510,51 +930,78 @@ export default function Milestones({
                 </div>
 
 
+                {/* CLIENT CREATE */}
+
                 {isClient &&
-                    projectStatus === "IN_PROGRESS" && (
+                    projectStatus ===
+                    "IN_PROGRESS" && (
 
                         <button
                             type="button"
                             className="milestone-create-button"
-                            onClick={() =>
+                            onClick={() => {
+
+                                setError("");
+                                setMessage("");
+
                                 setShowCreateForm(
-                                    (previous) => !previous
-                                )
-                            }
+                                    previous =>
+                                        !previous
+                                );
+
+                            }}
                         >
-                            + Create Milestone
+
+                            {showCreateForm
+                                ? "Close"
+                                : "+ Create Milestone"}
+
                         </button>
                     )}
 
             </div>
 
 
-            {/* =========================================
+            {/* =================================================
                 ERROR
-            ========================================= */}
+            ================================================= */}
 
             {error && (
 
                 <div className="milestone-error">
-
-                    <span>!</span>
-
                     {error}
-
                 </div>
+
             )}
 
 
-            {/* =========================================
+            {/* =================================================
+                SUCCESS
+            ================================================= */}
+
+            {message && (
+
+                <div className="milestone-success">
+                    {message}
+                </div>
+
+            )}
+
+
+            {/* =================================================
                 CREATE FORM
-            ========================================= */}
+            ================================================= */}
 
             {showCreateForm &&
-                isClient && (
+                isClient &&
+                projectStatus ===
+                "IN_PROGRESS" && (
 
                     <form
                         className="milestone-form"
-                        onSubmit={handleCreate}
+                        onSubmit={
+                            handleCreate
+                        }
                     >
 
                         <div className="milestone-form-header">
@@ -572,12 +1019,11 @@ export default function Milestones({
 
                             </div>
 
-
                             <button
                                 type="button"
                                 className="milestone-close"
-                                onClick={() =>
-                                    setShowCreateForm(false)
+                                onClick={
+                                    resetForm
                                 }
                             >
                                 ×
@@ -592,18 +1038,20 @@ export default function Milestones({
 
                             <div className="form-group">
 
-                                <label htmlFor="milestone-title">
+                                <label>
                                     Title
                                 </label>
 
                                 <input
-                                    id="milestone-title"
                                     type="text"
                                     name="title"
-                                    value={form.title}
-                                    onChange={handleChange}
+                                    value={
+                                        form.title
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     placeholder="Enter milestone title"
-                                    maxLength={200}
                                     required
                                 />
 
@@ -614,16 +1062,19 @@ export default function Milestones({
 
                             <div className="form-group">
 
-                                <label htmlFor="milestone-amount">
+                                <label>
                                     Amount
                                 </label>
 
                                 <input
-                                    id="milestone-amount"
                                     type="number"
                                     name="amount"
-                                    value={form.amount}
-                                    onChange={handleChange}
+                                    value={
+                                        form.amount
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     min="0.01"
                                     step="0.01"
                                     placeholder="Enter amount"
@@ -637,16 +1088,19 @@ export default function Milestones({
 
                             <div className="form-group">
 
-                                <label htmlFor="milestone-date">
+                                <label>
                                     Due Date
                                 </label>
 
                                 <input
-                                    id="milestone-date"
                                     type="date"
                                     name="due_date"
-                                    value={form.due_date}
-                                    onChange={handleChange}
+                                    value={
+                                        form.due_date
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     required
                                 />
 
@@ -658,14 +1112,13 @@ export default function Milestones({
                             <div className="form-group">
 
                                 <label>
-                                    Status
+                                    Initial Status
                                 </label>
 
                                 <input
                                     type="text"
                                     value="Planned"
                                     disabled
-                                    readOnly
                                 />
 
                             </div>
@@ -675,15 +1128,18 @@ export default function Milestones({
 
                             <div className="form-group full">
 
-                                <label htmlFor="milestone-description">
+                                <label>
                                     Description
                                 </label>
 
                                 <textarea
-                                    id="milestone-description"
                                     name="description"
-                                    value={form.description}
-                                    onChange={handleChange}
+                                    value={
+                                        form.description
+                                    }
+                                    onChange={
+                                        handleChange
+                                    }
                                     placeholder="Describe what this milestone includes..."
                                     rows="5"
                                 />
@@ -700,7 +1156,11 @@ export default function Milestones({
                             </span>
 
                             <span>
-                                The freelancer updates the progress.
+                                Freelancer updates progress.
+                            </span>
+
+                            <span>
+                                Client reviews completion.
                             </span>
 
                         </div>
@@ -711,23 +1171,25 @@ export default function Milestones({
                             <button
                                 type="button"
                                 className="milestone-cancel-button"
-                                onClick={() =>
-                                    setShowCreateForm(false)
+                                onClick={
+                                    resetForm
                                 }
-                                disabled={creating}
                             >
                                 Cancel
                             </button>
 
-
                             <button
                                 type="submit"
                                 className="milestone-submit-button"
-                                disabled={creating}
+                                disabled={
+                                    creating
+                                }
                             >
+
                                 {creating
                                     ? "Creating..."
                                     : "Create Milestone"}
+
                             </button>
 
                         </div>
@@ -736,9 +1198,9 @@ export default function Milestones({
                 )}
 
 
-            {/* =========================================
-                EMPTY STATE
-            ========================================= */}
+            {/* =================================================
+                EMPTY
+            ================================================= */}
 
             {milestones.length === 0 && (
 
@@ -755,20 +1217,23 @@ export default function Milestones({
                     <p>
                         {isClient
                             ? "Create the first milestone to start tracking this project."
-                            : "The project owner has not created any milestones yet."
-                        }
+                            : "The project owner has not created any milestones yet."}
                     </p>
 
-
                     {isClient &&
-                        projectStatus === "IN_PROGRESS" && (
+                        projectStatus ===
+                        "IN_PROGRESS" && (
 
                             <button
                                 type="button"
                                 className="milestone-create-button"
-                                onClick={() =>
-                                    setShowCreateForm(true)
-                                }
+                                onClick={() => {
+
+                                    setError("");
+                                    setMessage("");
+                                    setShowCreateForm(true);
+
+                                }}
                             >
                                 + Create First Milestone
                             </button>
@@ -778,9 +1243,9 @@ export default function Milestones({
             )}
 
 
-            {/* =========================================
+            {/* =================================================
                 MILESTONES
-            ========================================= */}
+            ================================================= */}
 
             {milestones.length > 0 && (
 
@@ -797,7 +1262,9 @@ export default function Milestones({
                             </span>
 
                             <strong>
-                                {milestones.length}
+                                {
+                                    milestones.length
+                                }
                             </strong>
 
                         </div>
@@ -810,7 +1277,9 @@ export default function Milestones({
                             </span>
 
                             <strong>
-                                {completedCount}
+                                {
+                                    completedCount
+                                }
                             </strong>
 
                         </div>
@@ -823,7 +1292,9 @@ export default function Milestones({
                             </span>
 
                             <strong>
-                                {overallProgress}%
+                                {
+                                    overallProgress
+                                }%
                             </strong>
 
                         </div>
@@ -831,44 +1302,86 @@ export default function Milestones({
                     </div>
 
 
-                    {/* LIST */}
+                    {/* CARDS */}
 
                     <div className="milestones-list">
 
                         {milestones.map(
-                            (milestone, index) => {
+                            milestone => {
 
-                                const progress =
-                                    Math.min(
-                                        100,
-                                        Math.max(
-                                            0,
+                                const itemProgress =
+                                    Math.max(
+                                        0,
+                                        Math.min(
+                                            100,
                                             Number(
-                                                milestone.progress || 0
+                                                milestone.progress ||
+                                                0
                                             )
                                         )
                                     );
 
+                                const currentDraft =
+                                    Number(
+                                        draftProgress[
+                                            milestone.id
+                                        ] ??
+                                        itemProgress
+                                    );
+
+                                const isSaving =
+                                    savingId ===
+                                    milestone.id;
+
+                                const isDeleting =
+                                    deletingId ===
+                                    milestone.id;
+
+                                const isReviewing =
+                                    reviewingId ===
+                                    milestone.id;
+
+                                const isSubmitted =
+                                    milestone.status ===
+                                    "SUBMITTED";
+
+                                const isCompleted =
+                                    milestone.status ===
+                                    "COMPLETED";
+
+                                const isCancelled =
+                                    milestone.status ===
+                                    "CANCELLED";
+
+                                const isNeedsChanges =
+                                    milestone.status ===
+                                    "NEEDS_CHANGES";
 
                                 return (
 
                                     <article
                                         className="milestone-card"
-                                        key={milestone.id}
+                                        key={
+                                            milestone.id
+                                        }
                                     >
 
-                                        {/* TOP */}
+                                        {/* =================================
+                                            HEADER
+                                        ================================== */}
 
                                         <div className="milestone-card-top">
 
                                             <div>
 
                                                 <span className="milestone-number">
-                                                    MILESTONE {index + 1}
+                                                    MILESTONE
                                                 </span>
 
                                                 <h3>
-                                                    {milestone.title}
+                                                    {
+                                                        milestone.title
+                                                    }
                                                 </h3>
 
                                             </div>
@@ -876,22 +1389,24 @@ export default function Milestones({
 
                                             <span
                                                 className={
-                                                    `milestone-status ${
-                                                        String(
-                                                            milestone.status || ""
-                                                        ).toLowerCase()
-                                                    }`
+                                                    `milestone-status ${getStatusClass(
+                                                        milestone.status
+                                                    )}`
                                                 }
                                             >
-                                                {formatStatus(
-                                                    milestone.status
-                                                )}
+                                                {
+                                                    formatStatus(
+                                                        milestone.status
+                                                    )
+                                                }
                                             </span>
 
                                         </div>
 
 
-                                        {/* DETAILS */}
+                                        {/* =================================
+                                            DETAILS
+                                        ================================== */}
 
                                         <div className="milestone-details">
 
@@ -902,9 +1417,11 @@ export default function Milestones({
                                                 </span>
 
                                                 <strong>
-                                                    {formatAmount(
-                                                        milestone.amount
-                                                    )}
+                                                    {
+                                                        formatAmount(
+                                                            milestone.amount
+                                                        )
+                                                    }
                                                 </strong>
 
                                             </div>
@@ -917,9 +1434,11 @@ export default function Milestones({
                                                 </span>
 
                                                 <strong>
-                                                    {formatDate(
-                                                        milestone.due_date
-                                                    )}
+                                                    {
+                                                        formatDate(
+                                                            milestone.due_date
+                                                        )
+                                                    }
                                                 </strong>
 
                                             </div>
@@ -932,12 +1451,17 @@ export default function Milestones({
                                         {milestone.description && (
 
                                             <p className="milestone-description">
-                                                {milestone.description}
+                                                {
+                                                    milestone.description
+                                                }
                                             </p>
+
                                         )}
 
 
-                                        {/* PROGRESS */}
+                                        {/* =================================
+                                            PROGRESS
+                                        ================================== */}
 
                                         <div className="milestone-progress-section">
 
@@ -948,18 +1472,23 @@ export default function Milestones({
                                                 </span>
 
                                                 <strong>
-                                                    {progress}%
+                                                    {
+                                                        itemProgress
+                                                    }%
                                                 </strong>
 
                                             </div>
 
+
+                                            {/* READ ONLY BAR */}
 
                                             <div className="progress-track">
 
                                                 <div
                                                     className="progress-fill"
                                                     style={{
-                                                        width: `${progress}%`
+                                                        width:
+                                                            `${itemProgress}%`,
                                                     }}
                                                 />
 
@@ -968,15 +1497,16 @@ export default function Milestones({
 
                                             {/* =================================
                                                 FREELANCER CONTROL
-                                            ================================= */}
+                                            ================================== */}
 
                                             {isFreelancer &&
-                                                milestone.status !== "COMPLETED" && (
+                                                !isCompleted &&
+                                                !isCancelled && (
 
                                                     <div className="freelancer-progress-control">
 
                                                         <label>
-                                                            Update your progress
+                                                            Update Progress
                                                         </label>
 
                                                         <input
@@ -984,17 +1514,22 @@ export default function Milestones({
                                                             min="0"
                                                             max="100"
                                                             step="5"
-                                                            value={progress}
-                                                            disabled={saving}
-                                                            onChange={(event) =>
-                                                                handleProgress(
-                                                                    milestone.id,
-                                                                    Number(
-                                                                        event.target.value
+                                                            value={
+                                                                currentDraft
+                                                            }
+                                                            disabled={
+                                                                isSaving ||
+                                                                isSubmitted
+                                                            }
+                                                            onChange={
+                                                                event =>
+                                                                    handleProgressSlider(
+                                                                        milestone.id,
+                                                                        event
                                                                     )
-                                                                )
                                                             }
                                                         />
+
 
                                                         <div className="progress-scale">
 
@@ -1020,87 +1555,229 @@ export default function Milestones({
 
                                                         </div>
 
+
+                                                        {!isSubmitted && (
+
+                                                            <button
+                                                                type="button"
+                                                                className="milestone-submit-button"
+                                                                disabled={
+                                                                    isSaving ||
+                                                                    currentDraft ===
+                                                                    itemProgress
+                                                                }
+                                                                onClick={() =>
+                                                                    handleSaveProgress(
+                                                                        milestone
+                                                                    )
+                                                                }
+                                                            >
+
+                                                                {isSaving
+                                                                    ? "Saving..."
+                                                                    : "Save Progress"}
+
+                                                            </button>
+
+                                                        )}
+
+
+                                                        {isSubmitted && (
+
+                                                            <p>
+                                                                Waiting for client review.
+                                                            </p>
+
+                                                        )}
+
+
+                                                        {isNeedsChanges && (
+
+                                                            <p>
+                                                                Client requested changes. Continue working and update the progress.
+                                                            </p>
+
+                                                        )}
+
                                                     </div>
+
                                                 )}
-
-
-                                            {/* =================================
-                                                SUBMITTED
-                                            ================================= */}
-
-                                            {milestone.status ===
-                                                "SUBMITTED" && (
-
-                                                <div className="milestone-submitted-message">
-
-                                                    ✓ Freelancer has
-                                                    submitted this
-                                                    milestone for review.
-
-                                                </div>
-                                            )}
 
 
                                             {/* =================================
                                                 CLIENT REVIEW
-                                            ================================= */}
+                                            ================================== */}
 
-                                            {isClient &&
-                                                milestone.status ===
-                                                "SUBMITTED" && (
+                                            {isClient && (
 
-                                                    <div className="milestone-review-actions">
+                                                <div className="milestone-client-review">
 
-                                                        <button
-                                                            type="button"
-                                                            className="approve-button"
-                                                            disabled={saving}
-                                                            onClick={() =>
-                                                                handleReview(
-                                                                    milestone.id,
-                                                                    "APPROVE"
-                                                                )
-                                                            }
-                                                        >
-                                                            ✓ Approve
-                                                        </button>
+                                                    <div className="milestone-client-info">
 
+                                                        <span>
+                                                            Freelancer progress:
+                                                        </span>
 
-                                                        <button
-                                                            type="button"
-                                                            className="changes-button"
-                                                            disabled={saving}
-                                                            onClick={() =>
-                                                                handleReview(
-                                                                    milestone.id,
-                                                                    "REQUEST_CHANGES"
-                                                                )
-                                                            }
-                                                        >
-                                                            Request Changes
-                                                        </button>
+                                                        <strong>
+                                                            {
+                                                                itemProgress
+                                                            }%
+                                                        </strong>
 
                                                     </div>
-                                                )}
 
 
-                                            {/* =================================
-                                                NEEDS CHANGES
-                                            ================================= */}
+                                                    {/* SUBMITTED */}
 
-                                            {milestone.status ===
-                                                "NEEDS_CHANGES" && (
+                                                    {isSubmitted && (
 
-                                                <div className="milestone-changes-message">
+                                                        <div className="milestone-review-actions">
 
-                                                    ↻ Changes requested.
-                                                    Freelancer can continue
-                                                    updating progress.
+                                                            <p>
+                                                                This milestone is ready for your review.
+                                                            </p>
+
+
+                                                            <button
+                                                                type="button"
+                                                                className="milestone-approve-button"
+                                                                disabled={
+                                                                    isReviewing
+                                                                }
+                                                                onClick={() =>
+                                                                    handleReview(
+                                                                        milestone,
+                                                                        "approve"
+                                                                    )
+                                                                }
+                                                            >
+
+                                                                {
+                                                                    isReviewing
+                                                                        ? "Processing..."
+                                                                        : "Approve & Complete"
+                                                                }
+
+                                                            </button>
+
+
+                                                            <button
+                                                                type="button"
+                                                                className="milestone-changes-button"
+                                                                disabled={
+                                                                    isReviewing
+                                                                }
+                                                                onClick={() =>
+                                                                    handleReview(
+                                                                        milestone,
+                                                                        "changes"
+                                                                    )
+                                                                }
+                                                            >
+                                                                Request Changes
+                                                            </button>
+
+                                                        </div>
+
+                                                    )}
+
+
+                                                    {/* WAITING */}
+
+                                                    {!isCompleted &&
+                                                        !isCancelled &&
+                                                        !isSubmitted && (
+
+                                                            <p>
+                                                                Waiting for the freelancer to complete this milestone.
+                                                            </p>
+
+                                                        )}
+
+
+                                                    {/* COMPLETED */}
+
+                                                    {isCompleted && (
+
+                                                        <p>
+                                                            ✓ This milestone has been approved and completed.
+                                                        </p>
+
+                                                    )}
+
+
+                                                    {/* CANCELLED */}
+
+                                                    {isCancelled && (
+
+                                                        <p>
+                                                            This milestone has been cancelled.
+                                                        </p>
+
+                                                    )}
 
                                                 </div>
+
                                             )}
 
                                         </div>
+
+
+                                        {/* =================================
+                                            CLIENT ACTIONS
+                                        ================================== */}
+
+                                        {isClient &&
+                                            !isCompleted &&
+                                            !isCancelled && (
+
+                                                <div className="milestone-card-actions">
+
+                                                    <button
+                                                        type="button"
+                                                        className="milestone-cancel-button"
+                                                        disabled={
+                                                            isReviewing ||
+                                                            isDeleting
+                                                        }
+                                                        onClick={() =>
+                                                            handleReview(
+                                                                milestone,
+                                                                "cancel"
+                                                            )
+                                                        }
+                                                    >
+
+                                                        {isReviewing
+                                                            ? "Processing..."
+                                                            : "Cancel Milestone"}
+
+                                                    </button>
+
+
+                                                    <button
+                                                        type="button"
+                                                        className="milestone-delete-button"
+                                                        disabled={
+                                                            isDeleting ||
+                                                            isReviewing
+                                                        }
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                milestone.id
+                                                            )
+                                                        }
+                                                    >
+
+                                                        {isDeleting
+                                                            ? "Deleting..."
+                                                            : "Delete Milestone"}
+
+                                                    </button>
+
+                                                </div>
+
+                                            )}
 
                                     </article>
                                 );

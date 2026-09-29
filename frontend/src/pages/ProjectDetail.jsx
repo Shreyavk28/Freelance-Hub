@@ -1243,19 +1243,15 @@ function ProjectDetail() {
                                     freelancer.
                                 </p>
 
-                                {project.status ===
-                                    "IN_PROGRESS" && (
-
-                                    <button
-                                        className="workspace-button"
-                                        onClick={
-                                            handleOpenWorkspace
-                                        }
-                                    >
-                                        Open Workspace →
-                                    </button>
-
-                                )}
+                                {(project.status === "IN_PROGRESS" ||
+  project.status === "COMPLETED") && (
+    <button
+        className="workspace-button"
+        onClick={handleOpenWorkspace}
+    >
+        Open Workspace →
+    </button>
+)}
 
                                 {project.status ===
                                     "OPEN" && (

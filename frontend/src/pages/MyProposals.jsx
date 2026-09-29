@@ -36,25 +36,110 @@ function MyProposals() {
 
             setError(
                 error.response?.data?.detail ||
-                    "Unable to load your proposals."
+                "Unable to load your proposals."
             );
+
         } finally {
             setLoading(false);
         }
     };
 
+    /*
+     * --------------------------------------------------
+     * DISPLAY STATUS
+     * --------------------------------------------------
+     *
+     * The proposal itself can remain ACCEPTED even
+     * after the project is completed.
+     *
+     * Backend now provides:
+     *
+     * display_status = COMPLETED
+     *
+     * when the project is completed.
+     *
+     * So the UI should use display_status first.
+     */
+
+    const getDisplayStatus = (proposal) => {
+        if (proposal.display_status) {
+            return proposal.display_status;
+        }
+
+        /*
+         * Fallback for older backend responses.
+         *
+         * If there is no display_status but the project
+         * is completed, show COMPLETED.
+         */
+
+        if (
+            proposal.project_status ===
+            "COMPLETED"
+        ) {
+            return "COMPLETED";
+        }
+
+        /*
+         * If the project is cancelled, show CANCELLED.
+         */
+
+        if (
+            proposal.project_status ===
+            "CANCELLED"
+        ) {
+            return "CANCELLED";
+        }
+
+        /*
+         * Otherwise use the actual proposal status.
+         */
+
+        return proposal.status;
+    };
+
     const getStatusClass = (status) => {
-        return `proposal-status proposal-status-${status.toLowerCase()}`;
+        return `proposal-status proposal-status-${String(
+            status || ""
+        ).toLowerCase()}`;
     };
 
     const formatStatus = (status) => {
+        if (!status) {
+            return "";
+        }
+
         return status
-            .replace("_", " ")
+            .replace(/_/g, " ")
             .toLowerCase()
             .replace(/\b\w/g, (letter) =>
                 letter.toUpperCase()
             );
     };
+
+    /*
+     * --------------------------------------------------
+     * SUMMARY COUNTS
+     * --------------------------------------------------
+     */
+
+    const pendingCount = proposals.filter(
+        (proposal) =>
+            getDisplayStatus(proposal) ===
+            "PENDING"
+    ).length;
+
+    const acceptedCount = proposals.filter(
+        (proposal) =>
+            getDisplayStatus(proposal) ===
+            "ACCEPTED"
+    ).length;
+
+    const rejectedCount = proposals.filter(
+        (proposal) =>
+            getDisplayStatus(proposal) ===
+            "REJECTED"
+    ).length;
 
     return (
         <div className="proposals-page">
@@ -62,14 +147,18 @@ function MyProposals() {
             {/* =========================================
                 NAVBAR
             ========================================= */}
+
             <FreelancerNavbar />
-{/* =========================================
+
+            {/* =========================================
                 MAIN
             ========================================= */}
 
             <main className="proposals-container">
 
-                {/* Header */}
+                {/* =========================================
+                    HEADER
+                ========================================= */}
 
                 <section className="proposals-header">
 
@@ -90,7 +179,6 @@ function MyProposals() {
 
                     </div>
 
-
                     <button
                         className="browse-projects-button"
                         onClick={() =>
@@ -104,17 +192,15 @@ function MyProposals() {
 
                 </section>
 
-
-                {/* Error */}
+                {/* =========================================
+                    ERROR
+                ========================================= */}
 
                 {error && (
-
                     <div className="proposals-error">
                         {error}
                     </div>
-
                 )}
-
 
                 {/* =========================================
                     SUMMARY
@@ -123,6 +209,8 @@ function MyProposals() {
                 {!loading && !error && (
 
                     <section className="proposal-summary">
+
+                        {/* TOTAL */}
 
                         <div className="summary-card">
 
@@ -136,6 +224,7 @@ function MyProposals() {
 
                         </div>
 
+                        {/* PENDING */}
 
                         <div className="summary-card">
 
@@ -144,17 +233,12 @@ function MyProposals() {
                             </span>
 
                             <strong>
-                                {
-                                    proposals.filter(
-                                        (proposal) =>
-                                            proposal.status ===
-                                            "PENDING"
-                                    ).length
-                                }
+                                {pendingCount}
                             </strong>
 
                         </div>
 
+                        {/* ACCEPTED */}
 
                         <div className="summary-card">
 
@@ -163,17 +247,12 @@ function MyProposals() {
                             </span>
 
                             <strong>
-                                {
-                                    proposals.filter(
-                                        (proposal) =>
-                                            proposal.status ===
-                                            "ACCEPTED"
-                                    ).length
-                                }
+                                {acceptedCount}
                             </strong>
 
                         </div>
 
+                        {/* REJECTED */}
 
                         <div className="summary-card">
 
@@ -182,13 +261,7 @@ function MyProposals() {
                             </span>
 
                             <strong>
-                                {
-                                    proposals.filter(
-                                        (proposal) =>
-                                            proposal.status ===
-                                            "REJECTED"
-                                    ).length
-                                }
+                                {rejectedCount}
                             </strong>
 
                         </div>
@@ -196,7 +269,6 @@ function MyProposals() {
                     </section>
 
                 )}
-
 
                 {/* =========================================
                     PROPOSALS
@@ -220,6 +292,9 @@ function MyProposals() {
 
                     </div>
 
+                    {/* =====================================
+                        LOADING
+                    ===================================== */}
 
                     {loading ? (
 
@@ -240,6 +315,10 @@ function MyProposals() {
                         </div>
 
                     ) : proposals.length === 0 ? (
+
+                        /* =================================
+                           EMPTY
+                        ================================= */
 
                         <div className="proposals-empty">
 
@@ -272,142 +351,186 @@ function MyProposals() {
 
                     ) : (
 
+                        /* =================================
+                           PROPOSAL LIST
+                        ================================= */
+
                         <div className="proposal-list">
 
                             {proposals.map(
-                                (proposal) => (
+                                (proposal) => {
 
-                                    <article
-                                        className="proposal-card"
-                                        key={proposal.id}
-                                    >
+                                    const displayStatus =
+                                        getDisplayStatus(
+                                            proposal
+                                        );
 
-                                        {/* Top */}
+                                    return (
+                                        <article
+                                            className="proposal-card"
+                                            key={
+                                                proposal.id
+                                            }
+                                        >
 
-                                        <div className="proposal-card-top">
+                                            {/* =================================
+                                                TOP
+                                            ================================= */}
 
-                                            <div>
+                                            <div className="proposal-card-top">
 
-                                                <h3>
+                                                <div>
+
+                                                    <h3>
+                                                        {
+                                                            proposal.project_title
+                                                        }
+                                                    </h3>
+
+                                                    <p className="proposal-date">
+                                                        Submitted{" "}
+                                                        {new Date(
+                                                            proposal.created_at
+                                                        ).toLocaleDateString()}
+                                                    </p>
+
+                                                </div>
+
+                                                {/* STATUS */}
+
+                                                <span
+                                                    className={getStatusClass(
+                                                        displayStatus
+                                                    )}
+                                                >
+                                                    {formatStatus(
+                                                        displayStatus
+                                                    )}
+                                                </span>
+
+                                            </div>
+
+                                            {/* =================================
+                                                DETAILS
+                                            ================================= */}
+
+                                            <div className="proposal-details">
+
+                                                <div className="proposal-detail">
+
+                                                    <span>
+                                                        Proposed Budget
+                                                    </span>
+
+                                                    <strong>
+                                                        ₹
+                                                        {
+                                                            proposal.proposed_budget
+                                                        }
+                                                    </strong>
+
+                                                </div>
+
+                                                <div className="proposal-detail">
+
+                                                    <span>
+                                                        Estimated Duration
+                                                    </span>
+
+                                                    <strong>
+                                                        {
+                                                            proposal.estimated_duration
+                                                        }{" "}
+                                                        days
+                                                    </strong>
+
+                                                </div>
+
+                                                <div className="proposal-detail">
+
+                                                    <span>
+                                                        Project
+                                                    </span>
+
+                                                    <strong>
+                                                        #
+                                                        {
+                                                            proposal.project
+                                                        }
+                                                    </strong>
+
+                                                </div>
+
+                                            </div>
+
+                                            {/* =================================
+                                                COVER LETTER
+                                            ================================= */}
+
+                                            <div className="cover-letter">
+
+                                                <span>
+                                                    Cover Letter
+                                                </span>
+
+                                                <p>
                                                     {
-                                                        proposal.project_title
+                                                        proposal.cover_letter
                                                     }
-                                                </h3>
-
-                                                <p className="proposal-date">
-                                                    Submitted{" "}
-                                                    {new Date(
-                                                        proposal.created_at
-                                                    ).toLocaleDateString()}
                                                 </p>
 
                                             </div>
 
+                                            {/* =================================
+                                                ACTIONS
+                                            ================================= */}
 
-                                            <span
-                                                className={getStatusClass(
-                                                    proposal.status
+                                            <div className="proposal-actions">
+
+                                                {/* =================================
+                                                    OPEN WORKSPACE
+                                                ================================= */}
+
+                                                {(
+                                                    displayStatus ===
+                                                        "ACCEPTED" ||
+                                                    displayStatus ===
+                                                        "COMPLETED"
+                                                ) && (
+
+                                                    <button
+                                                        className="view-project-button"
+                                                        onClick={() =>
+                                                            navigate(
+                                                                `/workspace/${proposal.project}`
+                                                            )
+                                                        }
+                                                    >
+                                                        Open Workspace →
+                                                    </button>
+
                                                 )}
-                                            >
-                                                {formatStatus(
-                                                    proposal.status
-                                                )}
-                                            </span>
 
-                                        </div>
+                                                {/* =================================
+                                                    VIEW PROJECT
+                                                ================================= */}
 
-
-                                        {/* Details */}
-
-                                        <div className="proposal-details">
-
-                                            <div className="proposal-detail">
-
-                                                <span>
-                                                    Proposed Budget
-                                                </span>
-
-                                                <strong>
-                                                    ₹
-                                                    {
-                                                        proposal.proposed_budget
+                                                <button
+                                                    className="view-project-button"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/projects/${proposal.project}`
+                                                        )
                                                     }
-                                                </strong>
+                                                >
+                                                    View Project
+                                                </button>
 
                                             </div>
 
-
-                                            <div className="proposal-detail">
-
-                                                <span>
-                                                    Estimated Duration
-                                                </span>
-
-                                                <strong>
-                                                    {
-                                                        proposal.estimated_duration
-                                                    }{" "}
-                                                    days
-                                                </strong>
-
-                                            </div>
-
-
-                                            <div className="proposal-detail">
-
-                                                <span>
-                                                    Project
-                                                </span>
-
-                                                <strong>
-                                                    #
-                                                    {
-                                                        proposal.project
-                                                    }
-                                                </strong>
-
-                                            </div>
-
-                                        </div>
-
-
-                                        {/* Cover Letter */}
-
-                                        <div className="cover-letter">
-
-                                            <span>
-                                                Cover Letter
-                                            </span>
-
-                                            <p>
-                                                {
-                                                    proposal.cover_letter
-                                                }
-                                            </p>
-
-                                        </div>
-
-
-                                        {/* Actions */}
-
-                                        <div className="proposal-actions">
-
-                                            <button
-                                                className="view-project-button"
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/projects/${proposal.project}`
-                                                    )
-                                                }
-                                            >
-                                                View Project
-                                            </button>
-
-                                        </div>
-
-                                    </article>
-
-                                )
+                                        </article>
+                                    );
+                                }
                             )}
 
                         </div>

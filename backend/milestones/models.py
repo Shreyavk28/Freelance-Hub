@@ -6,10 +6,36 @@ from projects.models import Project
 class Milestone(models.Model):
 
     class Status(models.TextChoices):
-        PLANNED = "PLANNED", "Planned"
-        IN_PROGRESS = "IN_PROGRESS", "In Progress"
-        COMPLETED = "COMPLETED", "Completed"
-        CANCELLED = "CANCELLED", "Cancelled"
+
+        PLANNED = (
+            "PLANNED",
+            "Planned"
+        )
+
+        IN_PROGRESS = (
+            "IN_PROGRESS",
+            "In Progress"
+        )
+
+        SUBMITTED = (
+            "SUBMITTED",
+            "Submitted"
+        )
+
+        NEEDS_CHANGES = (
+            "NEEDS_CHANGES",
+            "Needs Changes"
+        )
+
+        COMPLETED = (
+            "COMPLETED",
+            "Completed"
+        )
+
+        CANCELLED = (
+            "CANCELLED",
+            "Cancelled"
+        )
 
     project = models.ForeignKey(
         Project,
@@ -51,6 +77,7 @@ class Milestone(models.Model):
     )
 
     def __str__(self):
+
         return (
             f"{self.project.title} - "
             f"{self.title}"

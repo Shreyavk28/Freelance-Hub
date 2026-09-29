@@ -8,12 +8,6 @@ def create_project_workspace(
     project,
     freelancer
 ):
-    """
-    Create or retrieve the workspace for a project.
-
-    A project can have only one workspace because the
-    ProjectWorkspace.project field is OneToOneField.
-    """
 
     workspace, created = (
         ProjectWorkspace.objects.get_or_create(
@@ -24,13 +18,6 @@ def create_project_workspace(
             }
         )
     )
-
-    # -------------------------------------------------
-    # SAFETY
-    #
-    # If the workspace already exists but the participant
-    # information is different, synchronize it.
-    # -------------------------------------------------
 
     changed = False
 
