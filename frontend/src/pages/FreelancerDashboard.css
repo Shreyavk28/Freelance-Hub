@@ -1,0 +1,221 @@
+/* ================================
+   Freelancer Dashboard
+================================ */
+
+.freelancer-project-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 14px;
+}
+
+.freelancer-project-card {
+    background: white;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    padding: 22px;
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 25px;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.freelancer-project-card:hover {
+    border-color: #93c5fd;
+
+    box-shadow:
+        0 8px 25px rgba(15, 23, 42, 0.07);
+
+    transform: translateY(-2px);
+}
+
+.freelancer-project-main {
+    min-width: 0;
+
+    flex: 1;
+}
+
+.freelancer-project-title {
+    display: flex;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 12px;
+
+    margin-bottom: 8px;
+}
+
+.freelancer-project-title h3 {
+    margin: 0;
+
+    font-size: 18px;
+
+    color: #111827;
+}
+
+.freelancer-project-main > p {
+    margin: 0 0 14px;
+
+    color: #6b7280;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+
+    display: -webkit-box;
+
+    -webkit-line-clamp: 2;
+
+    -webkit-box-orient: vertical;
+
+    overflow: hidden;
+}
+
+/* ================================
+   Match Badge
+================================ */
+
+.match-badge {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 5px 9px;
+
+    border-radius: 20px;
+
+    background: #ecfdf5;
+
+    color: #059669;
+
+    font-size: 12px;
+
+    font-weight: 700;
+
+    white-space: nowrap;
+}
+
+/* ================================
+   Project Skills
+================================ */
+
+.project-skills {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 7px;
+
+    margin-top: 14px;
+}
+
+.skill-tag {
+    display: inline-block;
+
+    padding: 5px 9px;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    border-radius: 6px;
+
+    font-size: 12px;
+
+    font-weight: 500;
+}
+
+/* ================================
+   Responsive
+================================ */
+
+@media (max-width: 700px) {
+
+    .freelancer-project-card {
+        flex-direction: column;
+    }
+
+    .freelancer-project-card > div:last-child {
+        align-self: flex-start;
+    }
+
+    .freelancer-project-title {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 7px;
+    }
+}
+
+
+/* =========================================
+   INVITATION NAV BADGE
+========================================= */
+
+.invitation-nav-badge {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 18px;
+    height: 18px;
+
+    margin-left: 6px;
+
+    padding: 0 5px;
+
+    border-radius: 20px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 10px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================
+   QUICK ACTION COUNT
+========================================= */
+
+.quick-action-count {
+    display: inline-flex;
+
+    align-items: center;
+    justify-content: center;
+
+    min-width: 18px;
+    height: 18px;
+
+    margin-left: 7px;
+
+    padding: 0 5px;
+
+    border-radius: 20px;
+
+    background: #2563eb;
+
+    color: white;
+
+    font-size: 10px;
+
+    vertical-align: middle;
+}

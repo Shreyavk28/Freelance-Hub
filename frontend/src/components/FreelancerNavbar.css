@@ -1,0 +1,99 @@
+.freelancer-navbar {
+    width: 100%;
+    min-height: 74px;
+    display: flex;
+    align-items: center;
+    gap: 28px;
+    padding: 0 56px;
+    box-sizing: border-box;
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+    z-index: 10;
+}
+
+.freelancer-navbar-logo {
+    flex-shrink: 0;
+    font-size: 30px;
+    font-weight: 800;
+    color: #2563eb;
+    cursor: pointer;
+    letter-spacing: -0.7px;
+}
+
+.freelancer-navbar-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+}
+
+.freelancer-navbar-nav button {
+    border: none;
+    background: transparent;
+    color: #172033;
+    padding: 12px 14px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.freelancer-navbar-nav button:hover,
+.freelancer-navbar-nav button.active {
+    color: #2563eb;
+    background: #eff6ff;
+}
+
+.freelancer-navbar-user {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-shrink: 0;
+    font-weight: 600;
+    color: #111827;
+}
+
+.freelancer-navbar-logout {
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #111827;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.freelancer-navbar-logout:hover {
+    background: #f9fafb;
+}
+
+@media (max-width: 1200px) {
+    .freelancer-navbar {
+        gap: 16px;
+        padding: 0 28px;
+    }
+
+    .freelancer-navbar-logo {
+        font-size: 26px;
+    }
+
+    .freelancer-navbar-nav button {
+        padding: 10px 9px;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 900px) {
+    .freelancer-navbar {
+        flex-wrap: wrap;
+        padding: 14px 20px;
+    }
+
+    .freelancer-navbar-nav {
+        order: 3;
+        width: 100%;
+        overflow-x: auto;
+        padding-bottom: 4px;
+    }
+}

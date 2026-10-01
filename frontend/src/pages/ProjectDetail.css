@@ -1,0 +1,1657 @@
+/* =========================================================
+   PROJECT DETAIL PAGE
+========================================================= */
+
+.project-detail-page {
+    min-height: 100vh;
+    background: #f5f7fb;
+    color: #111827;
+}
+
+
+/* =========================================================
+   NAVBAR
+========================================================= */
+
+.project-detail-navbar {
+    height: 72px;
+    padding: 0 52px;
+
+    background: #ffffff;
+
+    border-bottom: 1px solid #e5e7eb;
+
+    display: flex;
+    align-items: center;
+
+    gap: 50px;
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.project-detail-logo {
+    color: #2563eb;
+
+    font-size: 27px;
+    font-weight: 800;
+
+    cursor: pointer;
+
+    white-space: nowrap;
+}
+
+.project-detail-nav {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    flex: 1;
+}
+
+.project-detail-nav button {
+    border: none;
+
+    background: transparent;
+
+    color: #1f2937;
+
+    padding: 11px 15px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.project-detail-nav button:hover {
+    background: #eff6ff;
+    color: #2563eb;
+}
+
+.project-detail-user {
+    display: flex;
+
+    align-items: center;
+
+    gap: 16px;
+
+    margin-left: auto;
+}
+
+.project-detail-user span {
+    color: #111827;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.project-detail-user button {
+    border: 1px solid #d1d5db;
+
+    background: #ffffff;
+
+    color: #111827;
+
+    padding: 10px 17px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 500;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.project-detail-user button:hover {
+    background: #f9fafb;
+    border-color: #9ca3af;
+}
+
+
+/* =========================================================
+   MAIN CONTAINER
+========================================================= */
+
+.project-detail-container {
+    max-width: 1200px;
+
+    margin: 0 auto;
+
+    padding: 38px 30px 70px;
+}
+
+
+/* =========================================================
+   BACK BUTTON
+========================================================= */
+
+.back-link {
+    display: inline-flex;
+
+    align-items: center;
+
+    border: none;
+
+    background: transparent;
+
+    color: #2563eb;
+
+    padding: 0;
+
+    margin-bottom: 24px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.back-link:hover {
+    color: #1d4ed8;
+    text-decoration: underline;
+}
+
+.back-button {
+    border: none;
+
+    background: #2563eb;
+
+    color: white;
+
+    padding: 11px 18px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
+
+.back-button:hover {
+    background: #1d4ed8;
+}
+
+
+/* =========================================================
+   PROJECT DETAIL LAYOUT
+========================================================= */
+
+.project-detail-layout {
+    display: grid;
+
+    grid-template-columns:
+        minmax(0, 2fr)
+        minmax(320px, 1fr);
+
+    gap: 24px;
+
+    align-items: start;
+}
+
+.project-detail-main {
+    min-width: 0;
+}
+
+.project-detail-sidebar {
+    min-width: 0;
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 20px;
+
+    position: sticky;
+    top: 96px;
+}
+
+
+/* =========================================================
+   MAIN PROJECT CARD
+========================================================= */
+
+.project-detail-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 30px;
+
+    box-shadow:
+        0 4px 16px rgba(15, 23, 42, 0.04);
+}
+
+
+/* =========================================================
+   PROJECT HEADER
+========================================================= */
+
+.project-detail-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 25px;
+
+    padding-bottom: 25px;
+
+    border-bottom: 1px solid #eef2f7;
+}
+
+.project-detail-label {
+    margin-bottom: 9px;
+
+    color: #64748b;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    letter-spacing: 1.2px;
+}
+
+.project-detail-header h1 {
+    margin: 0;
+
+    color: #111827;
+
+    font-size: 32px;
+    line-height: 1.25;
+
+    font-weight: 750;
+}
+
+.project-client {
+    margin: 11px 0 0;
+
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+.project-client strong {
+    color: #374151;
+}
+
+
+/* =========================================================
+   PROJECT STATUS
+========================================================= */
+
+.project-status {
+    display: inline-flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    padding: 7px 13px;
+
+    border-radius: 999px;
+
+    font-size: 12px;
+    font-weight: 700;
+
+    text-transform: uppercase;
+
+    white-space: nowrap;
+}
+
+.project-status-open {
+    background: #ecfdf5;
+
+    color: #059669;
+}
+
+.project-status-in_progress {
+    background: #eff6ff;
+
+    color: #2563eb;
+}
+
+.project-status-completed {
+    background: #f0fdf4;
+
+    color: #16a34a;
+}
+
+.project-status-cancelled {
+    background: #fef2f2;
+
+    color: #dc2626;
+}
+
+
+/* =========================================================
+   DESCRIPTION
+========================================================= */
+
+.project-description-section {
+    padding: 26px 0;
+
+    border-bottom: 1px solid #eef2f7;
+}
+
+.project-description-section h2 {
+    margin: 0 0 12px;
+
+    color: #111827;
+
+    font-size: 19px;
+}
+
+.project-description-section p {
+    margin: 0;
+
+    color: #4b5563;
+
+    font-size: 15px;
+
+    line-height: 1.8;
+
+    white-space: pre-line;
+}
+
+
+/* =========================================================
+   PROJECT INFORMATION
+========================================================= */
+
+.project-info-grid {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 0 30px;
+
+    padding: 24px 0;
+
+    border-bottom: 1px solid #eef2f7;
+}
+
+.project-info-item {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    gap: 15px;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.project-info-item:nth-last-child(-n + 2) {
+    border-bottom: none;
+}
+
+.project-info-item span {
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+.project-info-item strong {
+    color: #111827;
+
+    font-size: 14px;
+
+    text-align: right;
+}
+
+
+/* =========================================================
+   REQUIRED SKILLS
+========================================================= */
+
+.project-skills-section {
+    padding-top: 25px;
+}
+
+.project-skills-section h2 {
+    margin: 0 0 15px;
+
+    color: #111827;
+
+    font-size: 19px;
+}
+
+.project-skills-list {
+    display: flex;
+
+    flex-wrap: wrap;
+
+    gap: 9px;
+}
+
+.project-skill {
+    display: inline-flex;
+
+    align-items: center;
+
+    padding: 7px 11px;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    border-radius: 7px;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+/* =========================================================
+   SKILL MATCH
+========================================================= */
+
+.project-match-box {
+    margin-top: 28px;
+
+    padding: 19px;
+
+    background: #eff6ff;
+
+    border: 1px solid #bfdbfe;
+
+    border-radius: 10px;
+}
+
+.project-match-box > div {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 20px;
+}
+
+.project-match-box span {
+    color: #374151;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.project-match-box strong {
+    color: #2563eb;
+
+    font-size: 25px;
+}
+
+.project-match-box p {
+    margin: 8px 0 0;
+
+    color: #64748b;
+
+    font-size: 12px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   PROPOSAL CARD
+========================================================= */
+
+.proposal-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 25px;
+
+    box-shadow:
+        0 4px 18px rgba(15, 23, 42, 0.05);
+}
+
+.proposal-card-header {
+    margin-bottom: 22px;
+}
+
+.proposal-card-header h2 {
+    margin: 0 0 8px;
+
+    color: #111827;
+
+    font-size: 21px;
+}
+
+.proposal-card-header p {
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   PROPOSAL FORM
+========================================================= */
+
+.proposal-form {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 18px;
+}
+
+.proposal-form-group {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 7px;
+}
+
+.proposal-form-group label {
+    color: #374151;
+
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.proposal-form-group textarea,
+.proposal-form-group input {
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    padding: 11px 12px;
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    color: #111827;
+
+    background: #ffffff;
+
+    outline: none;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.proposal-form-group textarea {
+    min-height: 150px;
+
+    resize: vertical;
+
+    line-height: 1.5;
+}
+
+.proposal-form-group textarea::placeholder,
+.proposal-form-group input::placeholder {
+    color: #9ca3af;
+}
+
+.proposal-form-group textarea:focus,
+.proposal-form-group input:focus {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+/* =========================================================
+   PROPOSED BUDGET INPUT
+========================================================= */
+
+.proposal-input-with-symbol {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.proposal-input-with-symbol span {
+    padding-left: 12px;
+
+    color: #64748b;
+
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.proposal-input-with-symbol input {
+    flex: 1;
+
+    min-width: 0;
+
+    border: none;
+
+    outline: none;
+
+    box-shadow: none;
+
+    border-radius: 0;
+
+    padding-left: 8px;
+}
+
+.proposal-input-with-symbol input:focus {
+    border: none;
+
+    box-shadow: none;
+}
+
+.proposal-input-with-symbol:focus-within {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+/* =========================================================
+   DURATION INPUT
+========================================================= */
+
+.proposal-input-with-suffix {
+    display: flex;
+
+    align-items: center;
+
+    width: 100%;
+
+    box-sizing: border-box;
+
+    border: 1px solid #d1d5db;
+
+    border-radius: 8px;
+
+    overflow: hidden;
+
+    background: #ffffff;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.proposal-input-with-suffix input {
+    flex: 1;
+
+    min-width: 0;
+
+    border: none;
+
+    outline: none;
+
+    box-shadow: none;
+
+    border-radius: 0;
+}
+
+.proposal-input-with-suffix input:focus {
+    border: none;
+
+    box-shadow: none;
+}
+
+.proposal-input-with-suffix span {
+    padding-right: 12px;
+
+    color: #64748b;
+
+    font-size: 13px;
+}
+
+.proposal-input-with-suffix:focus-within {
+    border-color: #2563eb;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+
+/* =========================================================
+   SUBMIT BUTTON
+========================================================= */
+
+.submit-proposal-button {
+    width: 100%;
+
+    border: none;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    padding: 13px 18px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+        background 0.2s,
+        transform 0.1s;
+}
+
+.submit-proposal-button:hover {
+    background: #1d4ed8;
+}
+
+.submit-proposal-button:active {
+    transform: translateY(1px);
+}
+
+.submit-proposal-button:disabled {
+    opacity: 0.65;
+
+    cursor: not-allowed;
+
+    transform: none;
+}
+
+
+/* =========================================================
+   SUCCESS MESSAGE
+========================================================= */
+
+.proposal-success {
+    padding: 13px;
+
+    margin-bottom: 18px;
+
+    background: #ecfdf5;
+
+    border: 1px solid #a7f3d0;
+
+    border-radius: 8px;
+
+    color: #047857;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+.proposal-success button {
+    display: block;
+
+    margin-top: 10px;
+
+    border: none;
+
+    background: transparent;
+
+    color: #047857;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    padding: 0;
+
+    cursor: pointer;
+}
+
+.proposal-success button:hover {
+    text-decoration: underline;
+}
+
+
+/* =========================================================
+   ERROR MESSAGE
+========================================================= */
+
+.proposal-error {
+    padding: 13px;
+
+    margin-bottom: 18px;
+
+    background: #fef2f2;
+
+    border: 1px solid #fecaca;
+
+    border-radius: 8px;
+
+    color: #dc2626;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   PROJECT CLOSED
+========================================================= */
+
+.proposal-closed-card,
+.project-owner-card {
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 28px;
+
+    text-align: center;
+
+    box-shadow:
+        0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.closed-icon {
+    width: 54px;
+
+    height: 54px;
+
+    margin: 0 auto 15px;
+
+    border-radius: 50%;
+
+    background: #ecfdf5;
+
+    color: #059669;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 22px;
+
+    font-weight: 700;
+}
+
+.proposal-closed-card h2,
+.project-owner-card h2 {
+    margin: 0 0 8px;
+
+    color: #111827;
+
+    font-size: 20px;
+}
+
+.proposal-closed-card p,
+.project-owner-card p {
+    margin: 0 0 20px;
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+.proposal-closed-card button,
+.project-owner-card button {
+    border: none;
+
+    background: #2563eb;
+
+    color: #ffffff;
+
+    padding: 11px 17px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: background 0.2s;
+}
+
+.proposal-closed-card button:hover,
+.project-owner-card button:hover {
+    background: #1d4ed8;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.project-detail-loading {
+    min-height: 400px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    color: #64748b;
+
+    font-size: 15px;
+}
+
+
+/* =========================================================
+   ERROR PAGE
+========================================================= */
+
+.project-detail-error {
+    max-width: 600px;
+
+    margin: 80px auto;
+
+    padding: 35px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    text-align: center;
+
+    box-shadow:
+        0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+.project-detail-error h2 {
+    margin: 0 0 10px;
+
+    color: #111827;
+
+    font-size: 22px;
+}
+
+.project-detail-error p {
+    margin: 0 0 22px;
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   RESPONSIVE - TABLET
+========================================================= */
+
+@media (max-width: 900px) {
+
+    .project-detail-navbar {
+        padding: 0 25px;
+
+        gap: 25px;
+    }
+
+    .project-detail-logo {
+        font-size: 23px;
+    }
+
+    .project-detail-nav {
+        gap: 2px;
+    }
+
+    .project-detail-nav button {
+        padding: 9px 10px;
+
+        font-size: 13px;
+    }
+
+    .project-detail-container {
+        padding: 30px 20px 60px;
+    }
+
+    .project-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .project-detail-sidebar {
+        position: static;
+    }
+
+    .proposal-card {
+        width: 100%;
+
+        box-sizing: border-box;
+    }
+}
+
+
+/* =========================================================
+   RESPONSIVE - MOBILE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .project-detail-navbar {
+        height: auto;
+
+        min-height: 70px;
+
+        padding: 15px 18px;
+
+        flex-wrap: wrap;
+
+        gap: 12px;
+    }
+
+    .project-detail-logo {
+        width: 100%;
+
+        font-size: 24px;
+    }
+
+    .project-detail-nav {
+        order: 3;
+
+        width: 100%;
+
+        overflow-x: auto;
+
+        flex: none;
+    }
+
+    .project-detail-nav button {
+        white-space: nowrap;
+    }
+
+    .project-detail-user {
+        position: absolute;
+
+        right: 18px;
+
+        top: 17px;
+    }
+
+    .project-detail-user span {
+        display: none;
+    }
+
+    .project-detail-user button {
+        padding: 8px 12px;
+    }
+
+    .project-detail-container {
+        padding: 25px 15px 50px;
+    }
+
+    .project-detail-header {
+        flex-direction: column;
+
+        align-items: flex-start;
+
+        gap: 15px;
+    }
+
+    .project-detail-header h1 {
+        font-size: 27px;
+    }
+
+    .project-detail-card {
+        padding: 20px;
+    }
+
+    .project-info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .project-info-item:nth-last-child(-n + 2) {
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .project-info-item:last-child {
+        border-bottom: none;
+    }
+
+    .proposal-card {
+        padding: 20px;
+    }
+}
+
+
+/* =========================================================
+   VERY SMALL SCREENS
+========================================================= */
+
+@media (max-width: 400px) {
+
+    .project-detail-header h1 {
+        font-size: 24px;
+    }
+
+    .project-detail-card {
+        padding: 17px;
+    }
+
+    .proposal-card {
+        padding: 17px;
+    }
+
+    .project-info-item {
+        align-items: flex-start;
+
+        flex-direction: column;
+
+        gap: 5px;
+    }
+
+    .project-info-item strong {
+        text-align: left;
+    }
+}
+
+
+/* =========================================================
+   RECEIVED PROPOSALS
+========================================================= */
+
+.received-proposals-card {
+    margin-top: 24px;
+
+    background: #ffffff;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 14px;
+
+    padding: 26px;
+
+    box-shadow:
+        0 4px 18px rgba(15, 23, 42, 0.04);
+}
+
+
+/* =========================================================
+   RECEIVED PROPOSALS HEADER
+========================================================= */
+
+.received-proposals-header {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 20px;
+
+    padding-bottom: 22px;
+
+    border-bottom: 1px solid #eef2f7;
+}
+
+.received-proposals-header h2 {
+    margin: 4px 0 7px;
+
+    color: #111827;
+
+    font-size: 21px;
+}
+
+.received-proposals-header p {
+    margin: 0;
+
+    color: #64748b;
+
+    font-size: 14px;
+
+    line-height: 1.6;
+}
+
+.proposal-count-badge {
+    min-width: 38px;
+
+    height: 38px;
+
+    padding: 0 10px;
+
+    border-radius: 50%;
+
+    background: #eff6ff;
+
+    color: #2563eb;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 14px;
+
+    font-weight: 700;
+}
+
+
+/* =========================================================
+   PROPOSAL LIST
+========================================================= */
+
+.received-proposals-list {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 16px;
+
+    margin-top: 20px;
+}
+
+
+/* =========================================================
+   INDIVIDUAL PROPOSAL
+========================================================= */
+
+.received-proposal-card {
+    padding: 20px;
+
+    border: 1px solid #e5e7eb;
+
+    border-radius: 12px;
+
+    background: #ffffff;
+
+    transition:
+        border-color 0.2s,
+        box-shadow 0.2s;
+}
+
+.received-proposal-card:hover {
+    border-color: #cbd5e1;
+
+    box-shadow:
+        0 4px 15px rgba(15, 23, 42, 0.04);
+}
+
+
+/* =========================================================
+   PROPOSAL HEADER
+========================================================= */
+
+.received-proposal-top {
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: flex-start;
+
+    gap: 15px;
+}
+
+.freelancer-name {
+    color: #111827;
+
+    font-size: 17px;
+
+    font-weight: 700;
+}
+
+.proposal-submitted-date {
+    margin-top: 5px;
+
+    color: #94a3b8;
+
+    font-size: 12px;
+}
+
+
+/* =========================================================
+   PROPOSAL STATUS
+========================================================= */
+
+.proposal-status {
+    display: inline-flex;
+
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    font-size: 11px;
+
+    font-weight: 700;
+}
+
+.proposal-status-pending {
+    background: #fff7ed;
+
+    color: #ea580c;
+}
+
+.proposal-status-accepted {
+    background: #ecfdf5;
+
+    color: #059669;
+}
+
+.proposal-status-rejected {
+    background: #fef2f2;
+
+    color: #dc2626;
+}
+
+.proposal-status-withdrawn {
+    background: #f1f5f9;
+
+    color: #64748b;
+}
+
+
+/* =========================================================
+   PROPOSAL DETAILS
+========================================================= */
+
+.received-proposal-details {
+    display: grid;
+
+    grid-template-columns: repeat(2, 1fr);
+
+    gap: 15px;
+
+    margin-top: 18px;
+
+    padding: 15px 0;
+
+    border-top: 1px solid #f1f5f9;
+
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.received-proposal-details div {
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 5px;
+}
+
+.received-proposal-details span {
+    color: #64748b;
+
+    font-size: 12px;
+}
+
+.received-proposal-details strong {
+    color: #111827;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   COVER LETTER
+========================================================= */
+
+.cover-letter-section {
+    margin-top: 18px;
+}
+
+.cover-letter-section h4 {
+    margin: 0 0 8px;
+
+    color: #374151;
+
+    font-size: 13px;
+}
+
+.cover-letter-section p {
+    margin: 0;
+
+    padding: 13px;
+
+    background: #f8fafc;
+
+    border-radius: 8px;
+
+    color: #4b5563;
+
+    font-size: 13px;
+
+    line-height: 1.7;
+
+    white-space: pre-line;
+}
+
+
+/* =========================================================
+   ACCEPT / REJECT
+========================================================= */
+
+.proposal-decision-actions {
+    display: flex;
+
+    justify-content: flex-end;
+
+    gap: 10px;
+
+    margin-top: 18px;
+}
+
+.reject-proposal-button,
+.accept-proposal-button {
+    padding: 10px 16px;
+
+    border-radius: 8px;
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+}
+
+.reject-proposal-button {
+    border: 1px solid #fecaca;
+
+    background: #ffffff;
+
+    color: #dc2626;
+}
+
+.reject-proposal-button:hover {
+    background: #fef2f2;
+}
+
+.accept-proposal-button {
+    border: none;
+
+    background: #059669;
+
+    color: #ffffff;
+}
+
+.accept-proposal-button:hover {
+    background: #047857;
+}
+
+.reject-proposal-button:disabled,
+.accept-proposal-button:disabled {
+    opacity: 0.6;
+
+    cursor: not-allowed;
+}
+
+
+/* =========================================================
+   DECISION SUCCESS / ERROR
+========================================================= */
+
+.decision-success {
+    margin-top: 18px;
+
+    padding: 13px 15px;
+
+    background: #ecfdf5;
+
+    border: 1px solid #a7f3d0;
+
+    border-radius: 8px;
+
+    color: #047857;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+.decision-error {
+    margin-top: 18px;
+
+    padding: 13px 15px;
+
+    background: #fef2f2;
+
+    border: 1px solid #fecaca;
+
+    border-radius: 8px;
+
+    color: #dc2626;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+
+/* =========================================================
+   LOADING
+========================================================= */
+
+.received-proposals-loading {
+    padding: 35px 10px;
+
+    text-align: center;
+
+    color: #64748b;
+
+    font-size: 14px;
+}
+
+
+/* =========================================================
+   NO PROPOSALS
+========================================================= */
+
+.no-proposals {
+    padding: 40px 20px;
+
+    text-align: center;
+}
+
+.no-proposals-icon {
+    width: 45px;
+
+    height: 45px;
+
+    margin: 0 auto 13px;
+
+    border-radius: 50%;
+
+    background: #f1f5f9;
+
+    color: #64748b;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-weight: 700;
+}
+
+.no-proposals h3 {
+    margin: 0 0 7px;
+
+    color: #111827;
+
+    font-size: 17px;
+}
+
+.no-proposals p {
+    max-width: 450px;
+
+    margin: 0 auto;
+
+    color: #64748b;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+}
+
+
+/* =========================================================
+   RECEIVED PROPOSALS RESPONSIVE
+========================================================= */
+
+@media (max-width: 650px) {
+
+    .received-proposals-card {
+        padding: 20px;
+    }
+
+    .received-proposals-header {
+        flex-direction: column;
+    }
+
+    .received-proposal-top {
+        flex-direction: column;
+    }
+
+    .received-proposal-details {
+        grid-template-columns: 1fr;
+    }
+
+    .proposal-decision-actions {
+        flex-direction: column-reverse;
+    }
+
+    .reject-proposal-button,
+    .accept-proposal-button {
+        width: 100%;
+    }
+}
