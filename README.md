@@ -255,20 +255,37 @@ My resume is available through my portfolio website.
 
 ## 1. Clone the Repository
 
+```bash
+git clone https://github.com/Shreyavk28/shreya-web-portfolio.git
+```
 
-2. Navigate to the Project
+## 2. Navigate to the Project
+
+```bash
 cd shreya-web-portfolio
+```
 
-3. Install Dependencies
+## 3. Install Dependencies
+
+```bash
 npm install
+```
 
-4. Start the Development Server
+## 4. Start the Development Server
+
+```bash
 npm run dev
+```
 
 The application will be available at:
+
 http://localhost:5173
 
-📁 Project Structure
+---
+
+# 📁 Project Structure
+
+```text
 shreya-web-portfolio/
 │
 ├── public/
@@ -286,26 +303,39 @@ shreya-web-portfolio/
 ├── package-lock.json
 ├── vite.config.js
 └── README.md
+```
 
-⚙️ Technologies Used
-Technology	Purpose
-React.js	Frontend development
-Vite	Development and build tool
-JavaScript	Application logic
-HTML	Page structure
-CSS	Styling and responsive design
-Git	Version control
-GitHub	Source code hosting
+---
 
+# ⚙️ Technologies Used
 
-📱 Responsive Design
+| Technology | Purpose |
+|------------|---------|
+| React.js | Frontend development |
+| Vite | Development and build tool |
+| JavaScript | Application logic |
+| HTML | Page structure |
+| CSS | Styling and responsive design |
+| Git | Version control |
+| GitHub | Source code hosting |
+
+---
+
+# 📱 Responsive Design
+
 The portfolio is designed to work across different screen sizes:
+
 - 💻 Desktop
 - 💻 Laptop
 - 📱 Tablet
 - 📱 Mobile
+
 The interface focuses on clean navigation, responsive layouts and accessible content.
-✨ Portfolio Highlights
+
+---
+
+# ✨ Portfolio Highlights
+
 - Modern responsive UI
 - Interactive navigation
 - Project showcase
@@ -317,20 +347,37 @@ The interface focuses on clean navigation, responsive layouts and accessible con
 - GitHub and LinkedIn integration
 - Resume access
 - React-based component architecture
-🚀 Deployment
+
+---
+
+# 🚀 Deployment
+
 The portfolio can be deployed using platforms such as:
+
 - Vercel
 - Netlify
 - GitHub Pages
-Production Build
+
+## Production Build
+
 Create a production build using:
+
+```bash
 npm run build
+```
 
 To preview the production build locally:
-npm run preview
 
-🔮 Future Improvements
+```bash
+npm run preview
+```
+
+---
+
+# 🔮 Future Improvements
+
 Future improvements may include:
+
 - Dark/Light mode
 - Contact form with backend integration
 - Blog section
@@ -341,18 +388,78 @@ Future improvements may include:
 - Additional certifications
 - Improved accessibility
 - Performance optimization
-📬 Contact
-If you would like to connect regarding internship opportunities, full-time opportunities, projects or collaboration, feel free to reach out.
-📧 Email: shreyavkumar5344@gmail.com
-💼 LinkedIn:
-https://www.linkedin.com/in/shreya-vk-softwareengineer/
-💻 GitHub:
-https://github.com/Shreyavk28
-⭐ Support
-If you find this portfolio useful or interesting, consider giving the repository a ⭐ on GitHub.
-© 2026 Shreya V K
-Built with ❤️ using React.js and Vite.
-```
 
-```bash
-git clone https://github.com/Shreyavk28/shreya-web-portfolio.git
+---
+
+# 📬 Contact
+
+If you would like to connect regarding internship opportunities, full-time opportunities, projects or collaboration, feel free to reach out.
+
+📧 **Email:** shreyavkumar5344@gmail.com
+
+💼 **LinkedIn:**  
+https://www.linkedin.com/in/shreya-vk-softwareengineer/
+
+💻 **GitHub:**  
+https://github.com/Shreyavk28
+
+---
+
+# 📄 Resume
+
+My resume is available through my portfolio website.
+
+---
+
+# ⭐ Support
+
+If you find this portfolio useful or interesting, consider giving the repository a ⭐ on GitHub.
+
+---
+
+# 🔗 Repository
+
+**GitHub Repository:**
+
+https://github.com/Shreyavk28/shreya-web-portfolio
+
+---
+
+# 👩‍💻 Author
+
+**Shreya V K**
+
+🐍 Python Full Stack Developer
+
+🎓 B.E. Computer Science and Engineering — 2026
+
+📍 Bangalore, Karnataka, India
+
+---
+
+# 📌 Career Objective
+
+I am actively looking for opportunities where I can apply my knowledge of Python, Django, React.js, REST APIs, SQL and full-stack development while continuously learning and contributing to real-world software projects.
+
+I am open to:
+
+- Internship opportunities
+- Full-time opportunities
+- Python Developer roles
+- Full Stack Developer roles
+- Backend Developer roles
+- Software Developer roles
+
+---
+
+# ⭐ Thank You
+
+Thank you for visiting my portfolio and taking the time to explore my work.
+
+If you are interested in collaborating or discussing an opportunity, feel free to connect with me.
+
+---
+
+© 2026 **Shreya V K**
+
+**Built with ❤️ using React.js and Vite.**
