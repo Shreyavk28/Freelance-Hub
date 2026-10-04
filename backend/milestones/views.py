@@ -7,6 +7,8 @@ from rest_framework.views import APIView
 
 from accounts.models import User
 from projects.models import Project
+from proposals.models import Proposal
+from workspace.models import ProjectWorkspace
 
 from .models import Milestone
 from .serializers import MilestoneSerializer
@@ -17,10 +19,6 @@ from .serializers import MilestoneSerializer
 # ============================================================
 
 def get_milestone(milestone_id):
-    """
-    Return milestone with its project.
-    """
-
     return get_object_or_404(
         Milestone.objects.select_related(
             "project",
@@ -30,61 +28,76 @@ def get_milestone(milestone_id):
     )
 
 
-def get_assigned_freelancer(project):
+def freelancer_is_assigned(project, user):
     """
-    Return the freelancer assigned through the project workspace.
+    A freelancer can work on a project if:
+
+    1. Their proposal was accepted
+       OR
+    2. They are the freelancer stored in the workspace.
+
+    This means the logic is NOT hardcoded to Rahul, Alpa,
+    or any specific freelancer.
     """
 
-    try:
-        workspace = project.workspace
-        return workspace.freelancer
-    except Exception:
-        return None
+    if user.role != User.Role.FREELANCER:
+        return False
+
+    # --------------------------------------------------------
+    # Accepted proposal
+    # --------------------------------------------------------
+
+    accepted_proposal = Proposal.objects.filter(
+        project=project,
+        freelancer=user,
+        status=Proposal.Status.ACCEPTED,
+    ).exists()
+
+    if accepted_proposal:
+        return True
+
+    # --------------------------------------------------------
+    # Workspace freelancer
+    # --------------------------------------------------------
+
+    workspace_freelancer = ProjectWorkspace.objects.filter(
+        project=project,
+        freelancer=user,
+    ).exists()
+
+    return workspace_freelancer
 
 
 def user_can_access_project(request, project):
     """
-    Project access:
-
     CLIENT:
         Must own the project.
 
     FREELANCER:
-        Must be the freelancer assigned to the workspace.
+        Must be assigned to the project.
     """
 
-    # --------------------------------------------------------
-    # CLIENT
-    # --------------------------------------------------------
-
+    # Project client
     if project.client_id == request.user.id:
         return True
 
-    # --------------------------------------------------------
-    # FREELANCER
-    # --------------------------------------------------------
-
-    freelancer = get_assigned_freelancer(project)
-
-    if (
-        freelancer is not None
-        and freelancer.id == request.user.id
-    ):
-        return True
-
-    return False
+    # Assigned freelancer
+    return freelancer_is_assigned(
+        project,
+        request.user
+    )
 
 
 def sync_project_completion(project):
     """
-    A project becomes COMPLETED only when:
+    Project becomes COMPLETED only when:
 
-    1. At least one milestone exists.
-    2. Every milestone is COMPLETED.
-    3. Every milestone has 100% progress.
+    - at least one milestone exists
+    - every milestone is COMPLETED
+    - every milestone has 100% progress
 
-    If a previously completed project gets an incomplete
-    milestone, move it back to IN_PROGRESS.
+    If a completed project becomes incomplete again,
+    move it back to IN_PROGRESS.
     """
 
     milestones = Milestone.objects.filter(
@@ -102,7 +115,7 @@ def sync_project_completion(project):
     ).count()
 
     # --------------------------------------------------------
-    # ALL COMPLETED
+    # ALL MILESTONES COMPLETED
     # --------------------------------------------------------
 
     if completed == total:
@@ -121,7 +134,7 @@ def sync_project_completion(project):
             )
 
     # --------------------------------------------------------
-    # PROJECT WAS COMPLETED BUT NOW IS NOT
+    # PROJECT WAS COMPLETED BUT IS NO LONGER COMPLETE
     # --------------------------------------------------------
 
     elif project.status == Project.Status.COMPLETED:
@@ -143,27 +156,14 @@ def sync_project_completion(project):
 # ============================================================
 
 class ProjectMilestoneListCreateView(APIView):
-    """
-    GET:
-        /api/milestones/project/<project_id>/
-
-    POST:
-        /api/milestones/project/<project_id>/
-
-    CLIENT:
-        Can create milestones.
-
-    CLIENT + assigned FREELANCER:
-        Can view milestones.
-    """
 
     permission_classes = [
         IsAuthenticated
     ]
 
-    # --------------------------------------------------------
+    # ========================================================
     # GET
-    # --------------------------------------------------------
+    # ========================================================
 
     def get(
         self,
@@ -180,7 +180,6 @@ class ProjectMilestoneListCreateView(APIView):
             request,
             project
         ):
-
             return Response(
                 {
                     "detail": (
@@ -215,9 +214,10 @@ class ProjectMilestoneListCreateView(APIView):
             status=status.HTTP_200_OK
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # POST
-    # --------------------------------------------------------
+    # CLIENT CREATES MILESTONE
+    # ========================================================
 
     def post(
         self,
@@ -230,11 +230,8 @@ class ProjectMilestoneListCreateView(APIView):
             id=project_id
         )
 
-        # ----------------------------------------------------
-        # ONLY CLIENT
-        # ----------------------------------------------------
-
-        if request.user.role != User.Role.CLIENT:
+        # Only project client
+        if project.client_id != request.user.id:
 
             return Response(
                 {
@@ -246,36 +243,15 @@ class ProjectMilestoneListCreateView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # ----------------------------------------------------
-        # MUST OWN PROJECT
-        # ----------------------------------------------------
-
-        if project.client_id != request.user.id:
+        # Project must be in progress
+        if project.status != Project.Status.IN_PROGRESS:
 
             return Response(
                 {
                     "detail": (
-                        "You can only create milestones "
-                        "for your own projects."
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # ----------------------------------------------------
-        # PROJECT MUST BE IN PROGRESS
-        # ----------------------------------------------------
-
-        if (
-            project.status
-            != Project.Status.IN_PROGRESS
-        ):
-
-            return Response(
-                {
-                    "detail": (
-                        "Milestones can only be created "
-                        "for projects that are in progress."
+                        "Milestones can only be "
+                        "created for projects that "
+                        "are in progress."
                     )
                 },
                 status=status.HTTP_400_BAD_REQUEST
@@ -283,14 +259,8 @@ class ProjectMilestoneListCreateView(APIView):
 
         data = request.data.copy()
 
-        # Project comes from URL
         data["project"] = project.id
-
-        # Every new milestone starts here
-        data["status"] = (
-            Milestone.Status.PLANNED
-        )
-
+        data["status"] = Milestone.Status.PLANNED
         data["progress"] = 0
 
         serializer = MilestoneSerializer(
@@ -326,29 +296,14 @@ class ProjectMilestoneListCreateView(APIView):
 # ============================================================
 
 class MilestoneDetailView(APIView):
-    """
-    GET:
-        Any project participant.
-
-    PATCH:
-        CLIENT:
-            Can update milestone details.
-
-        FREELANCER:
-            Cannot directly change status.
-            Progress must use /progress/.
-
-    DELETE:
-        CLIENT only.
-    """
 
     permission_classes = [
         IsAuthenticated
     ]
 
-    # --------------------------------------------------------
+    # ========================================================
     # GET
-    # --------------------------------------------------------
+    # ========================================================
 
     def get(
         self,
@@ -364,7 +319,6 @@ class MilestoneDetailView(APIView):
             request,
             milestone.project
         ):
-
             return Response(
                 {
                     "detail": (
@@ -387,9 +341,10 @@ class MilestoneDetailView(APIView):
             status=status.HTTP_200_OK
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # PATCH
-    # --------------------------------------------------------
+    # CLIENT CAN EDIT DETAILS
+    # ========================================================
 
     def patch(
         self,
@@ -403,14 +358,11 @@ class MilestoneDetailView(APIView):
 
         project = milestone.project
 
-        # ====================================================
+        # ----------------------------------------------------
         # CLIENT
-        # ====================================================
+        # ----------------------------------------------------
 
         if project.client_id == request.user.id:
-
-            # Client can edit milestone details,
-            # but cannot directly change progress/status.
 
             forbidden_fields = {
                 "progress",
@@ -424,14 +376,12 @@ class MilestoneDetailView(APIView):
             if submitted_fields.intersection(
                 forbidden_fields
             ):
-
                 return Response(
                     {
                         "detail": (
-                            "Use the milestone review "
-                            "workflow to change status "
-                            "or use the freelancer progress "
-                            "endpoint to update progress."
+                            "Progress and status must "
+                            "be changed through the "
+                            "milestone workflow."
                         )
                     },
                     status=status.HTTP_403_FORBIDDEN
@@ -449,7 +399,6 @@ class MilestoneDetailView(APIView):
             }
 
             if not allowed_data:
-
                 return Response(
                     {
                         "detail": (
@@ -480,23 +429,18 @@ class MilestoneDetailView(APIView):
                 status=status.HTTP_200_OK
             )
 
-        # ====================================================
+        # ----------------------------------------------------
         # FREELANCER
-        # ====================================================
+        # ----------------------------------------------------
 
-        freelancer = get_assigned_freelancer(
-            project
-        )
-
-        if (
-            freelancer is None
-            or freelancer.id != request.user.id
+        if not freelancer_is_assigned(
+            project,
+            request.user
         ):
-
             return Response(
                 {
                     "detail": (
-                        "You are not the assigned "
+                        "You are not an assigned "
                         "freelancer for this project."
                     )
                 },
@@ -514,9 +458,10 @@ class MilestoneDetailView(APIView):
             status=status.HTTP_403_FORBIDDEN
         )
 
-    # --------------------------------------------------------
+    # ========================================================
     # DELETE
-    # --------------------------------------------------------
+    # CLIENT ONLY
+    # ========================================================
 
     def delete(
         self,
@@ -530,11 +475,7 @@ class MilestoneDetailView(APIView):
 
         project = milestone.project
 
-        # ----------------------------------------------------
-        # CLIENT ONLY
-        # ----------------------------------------------------
-
-        if request.user.role != User.Role.CLIENT:
+        if project.client_id != request.user.id:
 
             return Response(
                 {
@@ -546,30 +487,7 @@ class MilestoneDetailView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # ----------------------------------------------------
-        # MUST OWN PROJECT
-        # ----------------------------------------------------
-
-        if project.client_id != request.user.id:
-
-            return Response(
-                {
-                    "detail": (
-                        "You can only delete milestones "
-                        "from your own projects."
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # ----------------------------------------------------
-        # COMPLETED CANNOT BE DELETED
-        # ----------------------------------------------------
-
-        if (
-            milestone.status
-            == Milestone.Status.COMPLETED
-        ):
+        if milestone.status == Milestone.Status.COMPLETED:
 
             return Response(
                 {
@@ -583,7 +501,6 @@ class MilestoneDetailView(APIView):
 
         milestone.delete()
 
-        # Make sure project status is still correct.
         sync_project_completion(
             project
         )
@@ -603,22 +520,6 @@ class MilestoneDetailView(APIView):
 # ============================================================
 
 class MilestoneProgressView(APIView):
-    """
-    Freelancer controls ONLY progress.
-
-    0%
-        -> PLANNED
-
-    1-99%
-        -> IN_PROGRESS
-
-    100%
-        -> SUBMITTED
-
-    100% NEVER directly becomes COMPLETED.
-
-    The CLIENT must review the submitted milestone.
-    """
 
     permission_classes = [
         IsAuthenticated
@@ -645,30 +546,25 @@ class MilestoneProgressView(APIView):
             return Response(
                 {
                     "detail": (
-                        "Only the assigned freelancer "
-                        "can update milestone progress."
+                        "Only a freelancer can "
+                        "update milestone progress."
                     )
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
 
         # ----------------------------------------------------
-        # CHECK ASSIGNED FREELANCER
+        # ANY ASSIGNED FREELANCER
         # ----------------------------------------------------
 
-        freelancer = get_assigned_freelancer(
-            project
-        )
-
-        if (
-            freelancer is None
-            or freelancer.id != request.user.id
+        if not freelancer_is_assigned(
+            project,
+            request.user
         ):
-
             return Response(
                 {
                     "detail": (
-                        "You are not the assigned "
+                        "You are not an assigned "
                         "freelancer for this project."
                     )
                 },
@@ -676,7 +572,7 @@ class MilestoneProgressView(APIView):
             )
 
         # ----------------------------------------------------
-        # CANNOT UPDATE COMPLETED/CANCELLED
+        # COMPLETED
         # ----------------------------------------------------
 
         if milestone.status == Milestone.Status.COMPLETED:
@@ -690,6 +586,10 @@ class MilestoneProgressView(APIView):
                 },
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        # ----------------------------------------------------
+        # CANCELLED
+        # ----------------------------------------------------
 
         if milestone.status == Milestone.Status.CANCELLED:
 
@@ -718,10 +618,6 @@ class MilestoneProgressView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # ----------------------------------------------------
-        # CONVERT
-        # ----------------------------------------------------
-
         try:
 
             progress = int(
@@ -743,7 +639,7 @@ class MilestoneProgressView(APIView):
             )
 
         # ----------------------------------------------------
-        # VALIDATE RANGE
+        # VALIDATE
         # ----------------------------------------------------
 
         if progress < 0 or progress > 100:
@@ -759,13 +655,13 @@ class MilestoneProgressView(APIView):
             )
 
         # ----------------------------------------------------
-        # UPDATE PROGRESS
+        # UPDATE
         # ----------------------------------------------------
 
         milestone.progress = progress
 
         # ----------------------------------------------------
-        # STATUS AUTOMATICALLY FOLLOWS PROGRESS
+        # AUTOMATIC STATUS
         # ----------------------------------------------------
 
         if progress == 0:
@@ -782,8 +678,11 @@ class MilestoneProgressView(APIView):
 
         else:
 
-            # 100% means freelancer submitted work.
-            # Client must approve it.
+            # IMPORTANT:
+            # 100% does NOT mean completed.
+            #
+            # It means the freelancer has submitted
+            # the milestone for client review.
 
             milestone.status = (
                 Milestone.Status.SUBMITTED
@@ -815,19 +714,6 @@ class MilestoneProgressView(APIView):
 # ============================================================
 
 class MilestoneReviewView(APIView):
-    """
-    CLIENT reviews a milestone.
-
-    approve:
-        SUBMITTED -> COMPLETED
-
-    changes:
-        SUBMITTED -> NEEDS_CHANGES
-
-    cancel:
-        PLANNED / IN_PROGRESS / NEEDS_CHANGES / SUBMITTED
-        -> CANCELLED
-    """
 
     permission_classes = [
         IsAuthenticated
@@ -849,29 +735,13 @@ class MilestoneReviewView(APIView):
         # ONLY CLIENT
         # ----------------------------------------------------
 
-        if request.user.role != User.Role.CLIENT:
+        if project.client_id != request.user.id:
 
             return Response(
                 {
                     "detail": (
                         "Only the project client "
                         "can review milestones."
-                    )
-                },
-                status=status.HTTP_403_FORBIDDEN
-            )
-
-        # ----------------------------------------------------
-        # MUST OWN PROJECT
-        # ----------------------------------------------------
-
-        if project.client_id != request.user.id:
-
-            return Response(
-                {
-                    "detail": (
-                        "You can only review milestones "
-                        "from your own projects."
                     )
                 },
                 status=status.HTTP_403_FORBIDDEN
@@ -885,13 +755,11 @@ class MilestoneReviewView(APIView):
             "action"
         )
 
-        allowed_actions = {
+        if action not in {
             "approve",
             "changes",
             "cancel",
-        }
-
-        if action not in allowed_actions:
+        }:
 
             return Response(
                 {
@@ -906,14 +774,12 @@ class MilestoneReviewView(APIView):
 
         # ====================================================
         # APPROVE
+        # SUBMITTED -> COMPLETED
         # ====================================================
 
         if action == "approve":
 
-            if (
-                milestone.status
-                != Milestone.Status.SUBMITTED
-            ):
+            if milestone.status != Milestone.Status.SUBMITTED:
 
                 return Response(
                     {
@@ -944,33 +810,35 @@ class MilestoneReviewView(APIView):
             )
 
             milestone.refresh_from_db()
+            project.refresh_from_db()
 
             return Response(
                 {
                     "message": (
                         "Milestone approved successfully."
                     ),
+
                     "milestone": MilestoneSerializer(
                         milestone,
                         context={
                             "request": request
                         }
                     ).data,
-                    "project_status": project.status,
+
+                    "project_status":
+                        project.status,
                 },
                 status=status.HTTP_200_OK
             )
 
         # ====================================================
         # REQUEST CHANGES
+        # SUBMITTED -> NEEDS_CHANGES
         # ====================================================
 
         if action == "changes":
 
-            if (
-                milestone.status
-                != Milestone.Status.SUBMITTED
-            ):
+            if milestone.status != Milestone.Status.SUBMITTED:
 
                 return Response(
                     {
@@ -986,8 +854,11 @@ class MilestoneReviewView(APIView):
                 Milestone.Status.NEEDS_CHANGES
             )
 
-            # Keep progress below 100.
+            # 100% was submitted.
+            # Move it back below 100 so freelancer
+            # can continue working.
             if milestone.progress >= 100:
+
                 milestone.progress = 99
 
             milestone.save(
@@ -1003,19 +874,23 @@ class MilestoneReviewView(APIView):
             )
 
             milestone.refresh_from_db()
+            project.refresh_from_db()
 
             return Response(
                 {
                     "message": (
                         "Changes requested successfully."
                     ),
+
                     "milestone": MilestoneSerializer(
                         milestone,
                         context={
                             "request": request
                         }
                     ).data,
-                    "project_status": project.status,
+
+                    "project_status":
+                        project.status,
                 },
                 status=status.HTTP_200_OK
             )
@@ -1026,10 +901,7 @@ class MilestoneReviewView(APIView):
 
         if action == "cancel":
 
-            if (
-                milestone.status
-                == Milestone.Status.COMPLETED
-            ):
+            if milestone.status == Milestone.Status.COMPLETED:
 
                 return Response(
                     {
@@ -1041,10 +913,7 @@ class MilestoneReviewView(APIView):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            if (
-                milestone.status
-                == Milestone.Status.CANCELLED
-            ):
+            if milestone.status == Milestone.Status.CANCELLED:
 
                 return Response(
                     {
@@ -1071,19 +940,23 @@ class MilestoneReviewView(APIView):
             )
 
             milestone.refresh_from_db()
+            project.refresh_from_db()
 
             return Response(
                 {
                     "message": (
                         "Milestone cancelled successfully."
                     ),
+
                     "milestone": MilestoneSerializer(
                         milestone,
                         context={
                             "request": request
                         }
                     ).data,
-                    "project_status": project.status,
+
+                    "project_status":
+                        project.status,
                 },
                 status=status.HTTP_200_OK
             )
