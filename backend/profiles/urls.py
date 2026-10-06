@@ -6,6 +6,8 @@ from .views import (
     FreelancerProfilePhotoDeleteView,
     FreelancerListView,
     FreelancerDetailView,
+    SavedFreelancerListView,
+    SavedFreelancerView,
 )
 
 
@@ -21,7 +23,6 @@ urlpatterns = [
         name="client-profile",
     ),
 
-
     # =========================================================
     # FREELANCER'S OWN PROFILE
     # =========================================================
@@ -31,7 +32,6 @@ urlpatterns = [
         FreelancerProfileView.as_view(),
         name="freelancer-profile",
     ),
-
 
     # =========================================================
     # DELETE FREELANCER PROFILE PHOTO
@@ -43,7 +43,6 @@ urlpatterns = [
         name="freelancer-photo-delete",
     ),
 
-
     # =========================================================
     # FIND FREELANCERS
     # =========================================================
@@ -54,7 +53,6 @@ urlpatterns = [
         name="freelancer-list",
     ),
 
-
     # =========================================================
     # VIEW INDIVIDUAL FREELANCER
     # =========================================================
@@ -63,5 +61,25 @@ urlpatterns = [
         "freelancers/<int:freelancer_id>/",
         FreelancerDetailView.as_view(),
         name="freelancer-detail",
+    ),
+
+    # =========================================================
+    # SAVED FREELANCERS
+    # =========================================================
+
+    path(
+        "saved-freelancers/",
+        SavedFreelancerListView.as_view(),
+        name="saved-freelancers",
+    ),
+
+    # =========================================================
+    # SAVE / REMOVE FREELANCER
+    # =========================================================
+
+    path(
+        "saved-freelancers/<int:freelancer_id>/",
+        SavedFreelancerView.as_view(),
+        name="save-freelancer",
     ),
 ]

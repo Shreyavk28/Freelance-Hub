@@ -1,8 +1,15 @@
+
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 import "./Dashboard.css";
+
+function getList(data) {
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data?.results)) return data.results;
+    return [];
+}
 
 function ClientDashboard() {
     const navigate = useNavigate();
@@ -10,6 +17,7 @@ function ClientDashboard() {
 
     const [projects, setProjects] = useState([]);
     const [proposalCount, setProposalCount] = useState(0);
+    const [savedFreelancerCount, setSavedFreelancerCount] = useState(0);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
@@ -18,28 +26,54 @@ function ClientDashboard() {
     }, []);
 
     const fetchDashboardData = async () => {
+        setLoading(true);
+        setError("");
+
         try {
-            setLoading(true);
-            setError("");
+            const [projectsResult, savedResult] = await Promise.allSettled([
+                api.get("/projects/my/"),
+                api.get("/profiles/saved-freelancers/"),
+            ]);
 
-            // Get projects created by this client
-            const projectsResponse = await api.get("/projects/my/");
+            let projectList = [];
 
-            const projectData = projectsResponse.data;
+            if (projectsResult.status === "fulfilled") {
+                projectList = getList(projectsResult.value.data);
+                setProjects(projectList);
+            } else {
+                console.error(
+                    "Projects loading error:",
+                    projectsResult.reason
+                );
+                setProjects([]);
+                setError(
+                    projectsResult.reason?.response?.data?.detail ||
+                    "Unable to load projects."
+                );
+            }
 
-            setProjects(projectData);
+            if (savedResult.status === "fulfilled") {
+                const savedList = getList(savedResult.value.data);
+                setSavedFreelancerCount(savedList.length);
+            } else {
+                console.error(
+                    "Saved freelancers loading error:",
+                    savedResult.reason
+                );
+                setSavedFreelancerCount(0);
+            }
 
-            // Get proposals received for all projects
-            if (projectData.length > 0) {
-                const proposalResponses = await Promise.all(
-                    projectData.map((project) =>
+            if (projectList.length > 0) {
+                const proposalResponses = await Promise.allSettled(
+                    projectList.map((project) =>
                         api.get(`/proposals/project/${project.id}/`)
                     )
                 );
 
                 const totalProposals = proposalResponses.reduce(
-                    (total, response) => {
-                        return total + response.data.length;
+                    (total, result) => {
+                        if (result.status !== "fulfilled") return total;
+                        return total + getList(result.value.data).length;
                     },
                     0
                 );
@@ -48,12 +82,10 @@ function ClientDashboard() {
             } else {
                 setProposalCount(0);
             }
-
-        } catch (error) {
-            console.error("Dashboard error:", error);
-
+        } catch (err) {
+            console.error("Dashboard error:", err);
             setError(
-                error.response?.data?.detail ||
+                err.response?.data?.detail ||
                 "Unable to load dashboard data."
             );
         } finally {
@@ -66,77 +98,39 @@ function ClientDashboard() {
         navigate("/login");
     };
 
-    /*
-     * Dashboard statistics
-     */
-
-    // Total number of projects created by this client
     const totalProjects = projects.length;
 
-    // Active means OPEN or IN_PROGRESS
     const activeProjects = projects.filter(
-    (project) => project.status === "IN_PROGRESS"
-).length;
-
-    // Completed projects
-    const completedProjects = projects.filter(
-        (project) =>
-            project.status === "COMPLETED"
+        (project) => project.status === "IN_PROGRESS"
     ).length;
 
-    // Saved freelancers will be connected to the
-    // save/bookmark feature later.
-    const savedFreelancers = 0;
+    const completedProjects = projects.filter(
+        (project) => project.status === "COMPLETED"
+    ).length;
 
-    // Show latest 3 projects
     const recentProjects = projects.slice(0, 3);
 
     return (
         <div className="dashboard-page">
-
-            {/* ================================
-                Navbar
-            ================================= */}
-
             <header className="dashboard-navbar">
-
-                <div className="dashboard-logo">
-                    FreelanceHub
-                </div>
+                <div className="dashboard-logo">FreelanceHub</div>
 
                 <nav className="dashboard-nav">
-
-                    <button
-                        onClick={() =>
-                            navigate("/client/dashboard")
-                        }
-                    >
+                    <button onClick={() => navigate("/client/dashboard")}>
                         Dashboard
                     </button>
 
-                    <button
-                        onClick={() =>
-                            navigate("/projects")
-                        }
-                    >
+                    <button onClick={() => navigate("/projects")}>
                         My Projects
                     </button>
 
-                    <button
-                        onClick={() =>
-                            navigate("/find-freelancers")
-                        }
-                    >
+                    <button onClick={() => navigate("/find-freelancers")}>
                         Find Freelancers
                     </button>
-
                 </nav>
 
                 <div className="dashboard-user">
-
-                    <span>
-                        {user?.username}
-                    </span>
+                    <span>{user?.username}</span>
 
                     <button
                         className="logout-button"
@@ -144,389 +138,220 @@ function ClientDashboard() {
                     >
                         Logout
                     </button>
-
                 </div>
-
             </header>
 
-            {/* ================================
-                Main Content
-            ================================= */}
-
             <main className="dashboard-content">
-
-                {/* Welcome */}
-
                 <section className="dashboard-welcome">
-
                     <div>
-
-                        <p className="dashboard-label">
-                            CLIENT DASHBOARD
-                        </p>
-
-                        <h1>
-                            Welcome back, {user?.username} 👋
-                        </h1>
-
+                        <p className="dashboard-label">CLIENT DASHBOARD</p>
+                        <h1>Welcome back, {user?.username} 👋</h1>
                         <p>
-                            Manage your projects, find skilled
-                            freelancers, and collaborate with your
-                            team.
+                            Manage your projects, find skilled freelancers,
+                            and collaborate with your team.
                         </p>
-
                     </div>
 
                     <button
                         className="primary-button"
-                        onClick={() =>
-                            navigate("/projects/create")
-                        }
+                        onClick={() => navigate("/projects/create")}
                     >
                         + Post a Project
                     </button>
-
                 </section>
 
-                {/* Error */}
-
                 {error && (
-                    <div className="dashboard-error">
+                    <div className="dashboard-error" role="alert">
                         {error}
                     </div>
                 )}
 
-                {/* ================================
-                    Statistics
-                ================================= */}
-
                 <section className="dashboard-stats">
-
-                    {/* Total Projects */}
-
                     <div className="stat-card">
-
-                        <span>
-                            Total Projects
-                        </span>
-
-                        <strong>
-                            {loading ? "..." : totalProjects}
-                        </strong>
-
+                        <span>Total Projects</span>
+                        <strong>{loading ? "..." : totalProjects}</strong>
                     </div>
 
-                    {/* Active Projects */}
-
                     <div className="stat-card">
-
-                        <span>
-                            Active Projects
-                        </span>
-
-                        <strong>
-                            {loading ? "..." : activeProjects}
-                        </strong>
-
+                        <span>Active Projects</span>
+                        <strong>{loading ? "..." : activeProjects}</strong>
                     </div>
 
-                    {/* Proposals */}
-
                     <div className="stat-card">
-
-                        <span>
-                            Proposals Received
-                        </span>
-
-                        <strong>
-                            {loading ? "..." : proposalCount}
-                        </strong>
-
+                        <span>Proposals Received</span>
+                        <strong>{loading ? "..." : proposalCount}</strong>
                     </div>
 
-                    {/* Completed */}
-
                     <div className="stat-card">
-
-                        <span>
-                            Projects Completed
-                        </span>
-
-                        <strong>
-                            {loading ? "..." : completedProjects}
-                        </strong>
-
+                        <span>Projects Completed</span>
+                        <strong>{loading ? "..." : completedProjects}</strong>
                     </div>
 
-                    {/* Saved Freelancers */}
-
                     <div className="stat-card">
-
-                        <span>
-                            Saved Freelancers
-                        </span>
-
+                        <span>Saved Freelancers</span>
                         <strong>
-                            {savedFreelancers}
+                            {loading ? "..." : savedFreelancerCount}
                         </strong>
-
                     </div>
-
                 </section>
 
-                {/* ================================
-                    Quick Actions
-                ================================= */}
-
                 <section className="dashboard-section">
-
                     <div className="section-header">
-
                         <div>
-
-                            <h2>
-                                Quick Actions
-                            </h2>
-
-                            <p>
-                                Get started with your next project.
-                            </p>
-
+                            <h2>Quick Actions</h2>
+                            <p>Get started with your next project.</p>
                         </div>
-
                     </div>
 
                     <div className="quick-actions">
-
-                        {/* Post Project */}
-
                         <button
-                            onClick={() =>
-                                navigate("/projects/create")
-                            }
                             className="action-card"
+                            onClick={() => navigate("/projects/create")}
                         >
-
-                            <span className="action-icon">
-                                +
-                            </span>
-
+                            <span className="action-icon">+</span>
                             <div>
-
-                                <h3>
-                                    Post a Project
-                                </h3>
-
+                                <h3>Post a Project</h3>
                                 <p>
-                                    Tell freelancers what you
-                                    need help with.
+                                    Tell freelancers what you need help with.
                                 </p>
-
                             </div>
-
                         </button>
 
-                        {/* Find Freelancers */}
+                        <button
+                            className="action-card"
+                            onClick={() => navigate("/find-freelancers")}
+                        >
+                            <span className="action-icon">🔍</span>
+                            <div>
+                                <h3>Find Freelancers</h3>
+                                <p>
+                                    Search professionals by skills and
+                                    experience.
+                                </p>
+                            </div>
+                        </button>
 
                         <button
                             className="action-card"
                             onClick={() =>
-                                navigate("/freelancers")
+                                navigate("/find-freelancers")
                             }
                         >
-
-                            <span className="action-icon">
-                                🔍
-                            </span>
-
+                            <span className="action-icon">♥</span>
                             <div>
-
-                                <h3>
-                                    Find Freelancers
-                                </h3>
-
+                                <h3>Saved Freelancers</h3>
                                 <p>
-                                    Search professionals by
-                                    skills and experience.
+                                    Browse freelancers and manage your saved
+                                    list.
                                 </p>
-
                             </div>
-
                         </button>
-
-                        {/* Messages */}
 
                         <button
                             className="action-card"
-                            onClick={() =>
-                                navigate("/messages")
-                            }
+                            onClick={() => navigate("/messages")}
                         >
-
-                            <span className="action-icon">
-                                💬
-                            </span>
-
+                            <span className="action-icon">💬</span>
                             <div>
-
-                                <h3>
-                                    Messages
-                                </h3>
-
+                                <h3>Messages</h3>
                                 <p>
-                                    Communicate with your
-                                    freelancers.
+                                    Communicate with your freelancers.
                                 </p>
-
                             </div>
-
                         </button>
-
                     </div>
-
                 </section>
 
-                {/* ================================
-                    Recent Projects
-                ================================= */}
-
                 <section className="dashboard-section">
-
                     <div className="section-header">
-
                         <div>
-
-                            <h2>
-                                Recent Projects
-                            </h2>
-
-                            <p>
-                                Your latest projects.
-                            </p>
-
+                            <h2>Recent Projects</h2>
+                            <p>Your latest projects.</p>
                         </div>
 
                         <button
                             className="text-button"
-                            onClick={() =>
-                                navigate("/projects")
-                            }
+                            onClick={() => navigate("/projects")}
                         >
                             View all
                         </button>
-
                     </div>
 
                     {loading ? (
-
                         <div className="empty-state">
-
-                            <h3>
-                                Loading projects...
-                            </h3>
-
+                            <h3>Loading projects...</h3>
                         </div>
-
                     ) : recentProjects.length === 0 ? (
-
                         <div className="empty-state">
-
-                            <div className="empty-icon">
-                                📁
-                            </div>
-
-                            <h3>
-                                No projects yet
-                            </h3>
-
+                            <div className="empty-icon">📁</div>
+                            <h3>No projects yet</h3>
                             <p>
-                                Create your first project and
-                                start receiving proposals from
-                                freelancers.
+                                Create your first project and start receiving
+                                proposals from freelancers.
                             </p>
 
                             <button
                                 className="primary-button"
-                                onClick={() =>
-                                    navigate("/projects/create")
-                                }
+                                onClick={() => navigate("/projects/create")}
                             >
                                 Post Your First Project
                             </button>
-
                         </div>
-
                     ) : (
-
                         <div className="recent-project-list">
-
                             {recentProjects.map((project) => (
-
                                 <div
                                     className="project-preview-card"
                                     key={project.id}
                                     onClick={() =>
-                                        navigate(
-                                            `/projects/${project.id}`
-                                        )
+                                        navigate(`/projects/${project.id}`)
                                     }
                                     role="button"
-                                    tabIndex="0"
+                                    tabIndex={0}
+                                    onKeyDown={(event) => {
+                                        if (
+                                            event.key === "Enter" ||
+                                            event.key === " "
+                                        ) {
+                                            navigate(
+                                                `/projects/${project.id}`
+                                            );
+                                        }
+                                    }}
                                 >
-
                                     <div className="project-preview-main">
-
-                                        <h3>
-                                            {project.title}
-                                        </h3>
-
-                                        <p>
-                                            {project.description}
-                                        </p>
+                                        <h3>{project.title}</h3>
+                                        <p>{project.description}</p>
 
                                         <div className="project-meta">
-
-                                            <span>
-                                                {project.budget_type}
-                                            </span>
-
+                                            <span>{project.budget_type}</span>
                                             <span>
                                                 ₹{project.budget_amount}
                                             </span>
-
                                             <span>
                                                 Due: {project.deadline}
                                             </span>
-
                                         </div>
-
                                     </div>
 
                                     <div>
-
                                         <span
-                                            className={`status-badge status-${project.status.toLowerCase()}`}
+                                            className={`status-badge status-${(
+                                                project.status || ""
+                                            ).toLowerCase()}`}
                                         >
-                                            {project.status.replace(
+                                            {(project.status || "").replace(
                                                 "_",
                                                 " "
                                             )}
                                         </span>
-
                                     </div>
-
                                 </div>
-
                             ))}
-
                         </div>
-
                     )}
-
                 </section>
-
             </main>
-
         </div>
     );
 }

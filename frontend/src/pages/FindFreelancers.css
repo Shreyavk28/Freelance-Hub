@@ -1,3 +1,4 @@
+
 /* =========================================
    Find Freelancers Page
 ========================================= */
@@ -6,18 +7,28 @@
     min-height: 100vh;
     background: #f5f7fb;
     color: #111827;
+    font-family: inherit;
+    box-sizing: border-box;
 }
 
-/* Navbar */
+.find-freelancers-page *,
+.find-freelancers-page *::before,
+.find-freelancers-page *::after {
+    box-sizing: border-box;
+}
+
+/* =========================================
+   Navbar
+========================================= */
+
 .find-freelancers-navbar {
-    height: 72px;
+    min-height: 72px;
     padding: 0 58px;
     background: #ffffff;
     border-bottom: 1px solid #e5e7eb;
     display: flex;
     align-items: center;
     gap: 55px;
-    box-sizing: border-box;
 }
 
 .find-freelancers-logo {
@@ -77,11 +88,14 @@
     color: #2563eb;
 }
 
-/* Main */
+/* =========================================
+   Main Container
+========================================= */
+
 .find-freelancers-container {
-    width: min(1280px, calc(100% - 40px));
+    width: min(1548px, calc(100% - 80px));
     margin: 0 auto;
-    padding: 48px 0 70px;
+    padding: 42px 0 70px;
 }
 
 .find-freelancers-header {
@@ -106,9 +120,13 @@
     margin: 0;
     color: #64748b;
     font-size: 16px;
+    line-height: 1.6;
 }
 
-/* Search/filter card */
+/* =========================================
+   Search and Filters
+========================================= */
+
 .freelancer-search-card {
     padding: 30px;
     background: #ffffff;
@@ -131,6 +149,7 @@
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 0;
 }
 
 .freelancer-search-group label,
@@ -153,7 +172,6 @@
     font-family: inherit;
     font-size: 14px;
     outline: none;
-    box-sizing: border-box;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -161,7 +179,7 @@
 .freelancer-search-group select:focus,
 .sort-control select:focus {
     border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.10);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
 .freelancer-search-group input::placeholder {
@@ -170,6 +188,7 @@
 
 .search-full-width {
     width: 100%;
+    margin-bottom: 22px;
 }
 
 .custom-skill-filter-row {
@@ -220,7 +239,10 @@
     cursor: not-allowed;
 }
 
-/* Results header */
+/* =========================================
+   Results Header
+========================================= */
+
 .freelancer-results-header {
     margin: 40px 0 20px;
     display: flex;
@@ -251,7 +273,10 @@
     min-height: 42px;
 }
 
-/* Status */
+/* =========================================
+   Status and Messages
+========================================= */
+
 .freelancer-error,
 .freelancer-loading,
 .freelancer-empty {
@@ -270,6 +295,16 @@
 
 .freelancer-loading {
     color: #64748b;
+}
+
+.freelancer-success {
+    margin: 12px 0;
+    padding: 12px 16px;
+    border: 1px solid #bbf7d0;
+    border-radius: 8px;
+    background: #f0fdf4;
+    color: #15803d;
+    font-size: 14px;
 }
 
 .freelancer-empty-icon {
@@ -303,21 +338,32 @@
     background: #1d4ed8;
 }
 
-/* Freelancer cards */
+/* =========================================
+   Freelancer Grid
+========================================= */
+
 .freelancer-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 22px;
+    align-items: stretch;
+    gap: 26px;
 }
+
+/* Cards stretch to equal heights within each row. */
 
 .freelancer-card {
     min-width: 0;
-    padding: 26px;
+    height: 100%;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
     background: #ffffff;
     border: 1px solid #e5e7eb;
-    border-radius: 15px;
-    box-sizing: border-box;
-    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+    border-radius: 17px;
+    transition:
+        transform 0.2s,
+        box-shadow 0.2s,
+        border-color 0.2s;
 }
 
 .freelancer-card:hover {
@@ -325,6 +371,10 @@
     border-color: #bfdbfe;
     box-shadow: 0 10px 28px rgba(15, 23, 42, 0.07);
 }
+
+/* =========================================
+   Freelancer Profile Header
+========================================= */
 
 .freelancer-card-header {
     display: flex;
@@ -358,90 +408,208 @@
 }
 
 .freelancer-card-identity h3 {
-    margin: 0 0 5px;
+    margin: 0 0 8px;
+    color: #111827;
     font-size: 20px;
+    font-weight: 700;
+    overflow-wrap: anywhere;
 }
 
 .freelancer-card-identity p {
     margin: 0;
-    color: #64748b;
-    font-size: 13px;
-    line-height: 1.45;
+    color: #111827;
+    font-size: 14px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
 }
+
+/* =========================================
+   Freelancer Bio
+========================================= */
 
 .freelancer-bio {
     min-height: 62px;
-    margin: 22px 0 16px;
+    margin: 22px 0 18px;
     color: #475569;
     font-size: 14px;
-    line-height: 1.65;
+    line-height: 1.7;
+    overflow-wrap: anywhere;
 }
 
+/* =========================================
+   Location and Experience
+========================================= */
+
 .freelancer-meta {
-    padding: 15px 0;
+    padding: 18px 0;
     border-top: 1px solid #eef2f7;
     border-bottom: 1px solid #eef2f7;
     display: flex;
     flex-direction: column;
     gap: 10px;
     color: #64748b;
-    font-size: 13px;
+    font-size: 14px;
+    line-height: 1.5;
 }
 
+/* =========================================
+   Hourly Rate
+========================================= */
+
 .freelancer-rate {
-    padding: 17px 0 14px;
+    padding: 20px 0 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 15px;
     color: #64748b;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 .freelancer-rate strong {
     color: #111827;
-    font-size: 16px;
+    font-size: 17px;
+    font-weight: 700;
+    white-space: nowrap;
 }
+
+/* =========================================
+   Skills
+========================================= */
 
 .freelancer-skills {
     min-height: 54px;
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
+    align-items: flex-start;
     gap: 8px;
 }
 
 .freelancer-skills span {
-    padding: 7px 10px;
-    border-radius: 8px;
+    padding: 8px 12px;
+    border-radius: 9px;
     background: #eff6ff;
     color: #2563eb;
     font-size: 12px;
     font-weight: 600;
+    line-height: 1.4;
 }
 
-.view-freelancer-button {
+/* =========================================
+   FIXED CARD ACTION BUTTONS
+========================================= */
+
+/*
+   Both buttons share the same parent.
+   Equal flex values ensure equal widths.
+   align-items: stretch and a fixed height
+   ensure both buttons have identical heights.
+*/
+
+.freelancer-card-actions {
     width: 100%;
-    margin-top: 20px;
-    padding: 11px 16px;
-    border: 1px solid #2563eb;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #2563eb;
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 28px;
+}
+
+/* Common button styles */
+
+.freelancer-card-actions button {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    height: 50px;
+    min-height: 50px;
+    max-height: 50px;
+    margin: 0;
+    padding: 0 12px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    border: 1px solid #2864f0;
+    border-radius: 10px;
     font-family: inherit;
     font-size: 14px;
     font-weight: 600;
+    line-height: 1;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
     cursor: pointer;
-    transition: background 0.2s, color 0.2s;
+    appearance: none;
+    -webkit-appearance: none;
+    transition:
+        background-color 0.2s ease,
+        color 0.2s ease,
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
 }
 
-.view-freelancer-button:hover {
-    background: #2563eb;
+/* Save button */
+
+.freelancer-card-actions .save-freelancer-button {
+    background: #ffffff;
+    color: #2864f0;
+}
+
+.freelancer-card-actions .save-freelancer-button:hover:not(:disabled) {
+    background: #eff6ff;
+    border-color: #1d4ed8;
+    color: #1d4ed8;
+}
+
+/* Saved button */
+
+.freelancer-card-actions .save-freelancer-button.saved {
+    background: #2864f0;
+    border-color: #2864f0;
     color: #ffffff;
 }
 
-/* Responsive */
-@media (max-width: 1000px) {
+.freelancer-card-actions .save-freelancer-button.saved:hover:not(:disabled) {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+/* View Profile button */
+
+.freelancer-card-actions .view-freelancer-button {
+    background: #2864f0;
+    border-color: #2864f0;
+    color: #ffffff;
+}
+
+.freelancer-card-actions .view-freelancer-button:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+    color: #ffffff;
+}
+
+/* Keyboard focus */
+
+.freelancer-card-actions button:focus-visible {
+    outline: 3px solid rgba(37, 99, 235, 0.3);
+    outline-offset: 3px;
+}
+
+/* Disabled state */
+
+.freelancer-card-actions button:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+/* =========================================
+   Responsive: Tablets
+========================================= */
+
+@media (max-width: 1100px) {
     .find-freelancers-navbar {
         padding: 0 25px;
         gap: 25px;
@@ -451,14 +619,34 @@
         font-size: 25px;
     }
 
+    .find-freelancers-container {
+        width: calc(100% - 48px);
+    }
+
     .freelancer-filter-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
+
+    .freelancer-card {
+        padding: 24px;
+    }
+
+    .freelancer-card-actions {
+        gap: 10px;
+    }
+
+    .freelancer-card-actions button {
+        padding: 0 8px;
+        font-size: 13px;
+    }
 }
+
+/* =========================================
+   Responsive: Mobile and Small Tablets
+========================================= */
 
 @media (max-width: 760px) {
     .find-freelancers-navbar {
-        height: auto;
         min-height: 72px;
         padding: 15px 18px;
         flex-wrap: wrap;
@@ -468,6 +656,7 @@
     .find-freelancers-nav {
         order: 3;
         width: 100%;
+        flex: 0 0 100%;
         overflow-x: auto;
     }
 
@@ -476,7 +665,7 @@
     }
 
     .find-freelancers-container {
-        width: min(100% - 28px, 700px);
+        width: calc(100% - 28px);
         padding-top: 32px;
     }
 
@@ -508,6 +697,11 @@
 
     .freelancer-grid {
         grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .freelancer-card {
+        padding: 24px;
     }
 
     .filter-actions {
@@ -519,6 +713,10 @@
         width: 100%;
     }
 }
+
+/* =========================================
+   Responsive: Small Mobile
+========================================= */
 
 @media (max-width: 480px) {
     .find-freelancers-logo {
@@ -537,393 +735,418 @@
     .freelancer-card {
         padding: 20px;
     }
+
+    .freelancer-card-actions {
+        gap: 8px;
+        padding-top: 22px;
+    }
+
+    .freelancer-card-actions button {
+        height: 46px;
+        min-height: 46px;
+        max-height: 46px;
+        padding: 0 6px;
+        border-radius: 8px;
+        font-size: 12px;
+    }
+
+    .freelancer-rate strong {
+        font-size: 15px;
+    }
 }
 
 
 
-/* =========================================================
-   SEARCH + COLLAPSIBLE FILTERS
-========================================================= */
 
-.freelancer-search-card {
-    display: block !important;
+/* =========================================
+   FIX: Search bar and filter controls
+   ========================================= */
+
+.find-freelancers-page .freelancer-search-card {
+    padding: 28px 32px;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.04);
 }
 
-
-/* SEARCH */
-
-.freelancer-search-main {
+/* Search field */
+.find-freelancers-page .freelancer-search-card input[type="text"],
+.find-freelancers-page .freelancer-search-card input:not([type]) {
     width: 100%;
-}
-
-.freelancer-search-main label,
-.freelancer-filter-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    color: #17233f;
-}
-
-.freelancer-search-main input,
-.freelancer-filter-group select {
-    width: 100%;
-    height: 50px;
-    padding: 0 16px;
-    border: 1px solid #d5dbe7;
+    min-width: 0;
+    height: 48px;
+    padding: 0 15px;
+    border: 1px solid #d1d5db;
     border-radius: 9px;
-    background: white;
+    background: #ffffff;
+    color: #111827;
+    font-family: inherit;
     font-size: 15px;
-    color: #17233f;
+    outline: none;
     box-sizing: border-box;
 }
 
-.freelancer-search-main input:focus,
-.freelancer-filter-group select:focus {
-    outline: none;
-    border-color: #2864e6;
-    box-shadow: 0 0 0 3px rgba(40, 100, 230, 0.12);
+.find-freelancers-page .freelancer-search-card input[type="text"]:focus,
+.find-freelancers-page .freelancer-search-card input:not([type]):focus {
+    border-color: #2864f0;
+    box-shadow: 0 0 0 3px rgba(40, 100, 240, 0.12);
 }
 
-
-/* FILTER BUTTON */
-
-.freelancer-filter-button-row {
-    display: flex;
-    justify-content: flex-end;
-    margin-top: 16px;
+.find-freelancers-page .freelancer-search-card input::placeholder {
+    color: #94a3b8;
 }
 
-.freelancer-filter-button {
-    display: inline-flex;
-    align-items: center;
-    gap: 9px;
-
-    height: 46px;
-    padding: 0 18px;
-
-    border: 1px solid #d5dbe7;
-    border-radius: 9px;
-
-    background: white;
-    color: #17233f;
-
+/* Search labels */
+.find-freelancers-page .freelancer-search-card label {
+    display: block;
+    margin-bottom: 8px;
+    color: #334155;
     font-size: 14px;
     font-weight: 600;
+}
 
+/* Filter dropdowns */
+.find-freelancers-page .freelancer-search-card select {
+    width: 100%;
+    min-width: 0;
+    height: 48px;
+    padding: 0 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+/* Filter toggle and other search-area buttons */
+.find-freelancers-page .freelancer-search-card button {
+    min-height: 44px;
+    padding: 10px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 9px;
+    background: #ffffff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-
-    transition:
-        background 0.2s ease,
-        border-color 0.2s ease,
-        color 0.2s ease;
 }
 
-.freelancer-filter-button:hover {
-    border-color: #2864e6;
-    color: #2864e6;
+.find-freelancers-page .freelancer-search-card button:hover {
+    border-color: #2864f0;
+    color: #2864f0;
 }
 
-.freelancer-filter-button.active {
-    background: #eef4ff;
-    border-color: #2864e6;
-    color: #2864e6;
+/* Keep search fields and filter controls from overflowing */
+.find-freelancers-page .freelancer-search-card * {
+    box-sizing: border-box;
 }
 
-.filter-arrow {
-    font-size: 11px;
-    margin-left: 3px;
+/* =========================================
+   FIX: Equal Save and View Profile buttons
+   ========================================= */
+
+.find-freelancers-page .freelancer-card-actions {
+    display: flex;
+    align-items: stretch;
+    gap: 12px;
+    width: 100%;
+    margin-top: auto;
+    padding-top: 28px;
 }
 
-.filter-count {
+.find-freelancers-page .freelancer-card-actions button {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    height: 50px;
+    min-height: 50px;
+    max-height: 50px;
+    margin: 0;
+    padding: 0 10px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-
-    min-width: 21px;
-    height: 21px;
-
-    padding: 0 5px;
-
-    border-radius: 50%;
-
-    background: #2864e6;
-    color: white;
-
-    font-size: 12px;
-    font-weight: 700;
-}
-
-
-/* =========================================================
-   FILTER PANEL
-========================================================= */
-
-.freelancer-filter-panel {
-    margin-top: 20px;
-    padding-top: 20px;
-
-    border-top: 1px solid #e4e8ef;
-
-    display: grid;
-    grid-template-columns:
-        repeat(4, minmax(0, 1fr));
-
-    gap: 18px;
-}
-
-
-/* FILTER GROUP */
-
-.freelancer-filter-group {
-    min-width: 0;
-}
-
-.freelancer-filter-group select {
+    border: 1px solid #2864f0;
+    border-radius: 10px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
     cursor: pointer;
 }
 
+.find-freelancers-page .freelancer-card-actions .save-freelancer-button {
+    background: #ffffff;
+    color: #2864f0;
+}
 
-/* =========================================================
-   FILTER ACTIONS
-========================================================= */
+.find-freelancers-page .freelancer-card-actions .save-freelancer-button.saved,
+.find-freelancers-page .freelancer-card-actions .view-freelancer-button {
+    background: #2864f0;
+    color: #ffffff;
+}
 
-.freelancer-filter-actions {
-    grid-column: 1 / -1;
+@media (max-width: 480px) {
+    .find-freelancers-page .freelancer-search-card {
+        padding: 20px;
+    }
 
+    .find-freelancers-page .freelancer-card-actions {
+        gap: 8px;
+    }
+
+    .find-freelancers-page .freelancer-card-actions button {
+        padding: 0 6px;
+        font-size: 12px;
+    }
+}
+
+
+
+
+
+
+/* ==========================================
+   Search bar and interactive Filters button
+   ========================================== */
+
+.find-freelancers-page .freelancer-search-card {
+    padding: 28px 32px;
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    box-shadow: 0 8px 28px rgba(15, 23, 42, 0.04);
+}
+
+.find-freelancers-page .freelancer-search-main {
+    width: 100%;
+    margin: 0;
+}
+
+.find-freelancers-page .freelancer-search-main > label {
+    display: block;
+    margin-bottom: 10px;
+    color: #334155;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* Input and Filters button stay on the same row */
+.find-freelancers-page .freelancer-search-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-
-    padding-top: 18px;
-
-    border-top: 1px solid #e4e8ef;
-
-    font-size: 14px;
-    color: #61708b;
-}
-
-.freelancer-filter-actions button {
-    height: 40px;
-
-    padding: 0 16px;
-
-    border: 1px solid #d5dbe7;
-    border-radius: 8px;
-
-    background: white;
-
-    color: #2864e6;
-
-    font-size: 14px;
-    font-weight: 600;
-
-    cursor: pointer;
-}
-
-.freelancer-filter-actions button:hover:not(:disabled) {
-    background: #eef4ff;
-    border-color: #2864e6;
-}
-
-.freelancer-filter-actions button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-
-/* =========================================================
-   EMPTY RESULT BUTTON
-========================================================= */
-
-.freelancer-empty button {
-    margin-top: 15px;
-
-    padding: 11px 18px;
-
-    border: none;
-    border-radius: 8px;
-
-    background: #2864e6;
-    color: white;
-
-    font-weight: 600;
-
-    cursor: pointer;
-}
-
-
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-width: 900px) {
-
-    .freelancer-filter-panel {
-        grid-template-columns:
-            repeat(2, minmax(0, 1fr));
-    }
-
-}
-
-
-@media (max-width: 600px) {
-
-    .freelancer-filter-panel {
-        grid-template-columns: 1fr;
-    }
-
-    .freelancer-filter-actions {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-
-    .freelancer-filter-actions button {
-        width: 100%;
-    }
-
-}
-
-/* =========================================================
-   COMPACT SEARCH + FILTER BAR
-   ========================================================= */
-
-.freelancer-search-card {
-    padding: 22px 24px !important;
-    border-radius: 14px;
-}
-
-.freelancer-search-main {
-    margin-bottom: 0 !important;
-}
-
-.freelancer-search-main label {
-    display: block;
-    margin-bottom: 8px;
-    color: #17233f;
-    font-size: 14px;
-    font-weight: 600;
-}
-
-.freelancer-search-row {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 10px;
+    gap: 14px;
     width: 100%;
 }
 
-.freelancer-search-main input {
-    width: 100%;
-    height: 44px !important;
-    min-height: 44px !important;
-    padding: 0 14px !important;
-    border: 1px solid #d5dbe7;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #17233f;
-    font-size: 14px !important;
+.find-freelancers-page .freelancer-search-row > input {
+    flex: 1 1 auto;
+    width: 0;
+    min-width: 0;
+    height: 48px;
+    margin: 0;
+    padding: 0 18px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    background: #fff;
+    color: #111827;
+    font-family: inherit;
+    font-size: 15px;
+    outline: none;
     box-sizing: border-box;
 }
 
-.freelancer-search-main input:focus {
-    outline: none;
-    border-color: #2864e6;
-    box-shadow: 0 0 0 3px rgba(40, 100, 230, 0.10);
+.find-freelancers-page .freelancer-search-row > input::placeholder {
+    color: #94a3b8;
 }
 
-.freelancer-filter-button {
-    height: 44px !important;
-    min-width: 112px;
-    padding: 0 14px !important;
-    border: 1px solid #d5dbe7;
-    border-radius: 8px;
-    background: #ffffff;
-    color: #17233f;
+.find-freelancers-page .freelancer-search-row > input:focus {
+    border-color: #2864f0;
+    box-shadow: 0 0 0 3px rgba(40, 100, 240, 0.1);
+}
+
+/* Filters button aligned at the right */
+.find-freelancers-page .freelancer-filter-button {
+    flex: 0 0 auto;
+    min-width: 120px;
+    height: 48px;
+    margin: 0;
+    padding: 0 15px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 1px solid #2864f0;
+    border-radius: 10px;
+    background: #fff;
+    color: #2864f0;
+    font-family: inherit;
     font-size: 14px;
     font-weight: 600;
     white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+    transition: background-color 0.2s ease;
 }
 
-.freelancer-filter-button:hover,
-.freelancer-filter-button.active {
-    border-color: #2864e6;
-    color: #2864e6;
-    background: #eef4ff;
+.find-freelancers-page .freelancer-filter-button:hover,
+.find-freelancers-page .freelancer-filter-button.active {
+    background: #eff6ff;
 }
 
-.freelancer-filter-panel {
-    margin-top: 14px !important;
-    padding: 16px 0 0 !important;
-    border-top: 1px solid #e4e8ef;
+.find-freelancers-page .filter-arrow {
+    font-size: 10px;
+}
+
+.find-freelancers-page .filter-count {
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #2864f0;
+    color: #fff;
+    font-size: 11px;
+}
+
+/* ==========================================
+   Expandable filter panel
+   ========================================== */
+
+.find-freelancers-page .freelancer-filter-panel {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+    display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 14px !important;
+    gap: 20px;
+    align-items: end;
 }
 
-.freelancer-filter-group label {
-    margin-bottom: 6px;
+.find-freelancers-page .freelancer-filter-group {
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.find-freelancers-page .freelancer-filter-group label {
+    color: #334155;
     font-size: 13px;
+    font-weight: 600;
 }
 
-.freelancer-filter-group select {
-    height: 42px !important;
-    min-height: 42px !important;
-    padding: 0 12px !important;
-    border-radius: 8px;
-    font-size: 13px !important;
-}
-
-.freelancer-filter-actions {
-    padding-top: 12px !important;
-    font-size: 13px;
-}
-
-.freelancer-filter-actions button {
-    height: 36px !important;
-    padding: 0 14px !important;
-    font-size: 13px !important;
-}
-
-@media (max-width: 600px) {
-    .freelancer-search-card {
-        padding: 18px !important;
-    }
-
-    .freelancer-search-row {
-        grid-template-columns: 1fr;
-    }
-
-    .freelancer-filter-button {
-        width: 100%;
-    }
-}
-
-
-/* =========================================================
-   MANUAL SKILL SEARCH
-   ========================================================= */
-
-.freelancer-filter-group input {
+.find-freelancers-page .freelancer-filter-group input,
+.find-freelancers-page .freelancer-filter-group select {
     width: 100%;
-    height: 50px;
-    padding: 0 16px;
-    border: 1px solid #d5dbe7;
+    min-width: 0;
+    height: 46px;
+    margin: 0;
+    padding: 0 12px;
+    border: 1px solid #cbd5e1;
     border-radius: 9px;
-    background: #ffffff;
-    color: #17233f;
+    background: #fff;
+    color: #334155;
     font-family: inherit;
-    font-size: 15px;
+    font-size: 14px;
     box-sizing: border-box;
     outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.freelancer-filter-group input::placeholder {
-    color: #9ca3af;
+.find-freelancers-page .freelancer-filter-group input:focus,
+.find-freelancers-page .freelancer-filter-group select:focus {
+    border-color: #2864f0;
+    box-shadow: 0 0 0 3px rgba(40, 100, 240, 0.1);
 }
 
-.freelancer-filter-group input:focus {
-    border-color: #2864e6;
-    box-shadow: 0 0 0 3px rgba(40, 100, 230, 0.12);
+/* Clear Filters row */
+.find-freelancers-page .freelancer-filter-footer {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding-top: 18px;
+    border-top: 1px solid #eef2f7;
 }
+
+.find-freelancers-page .freelancer-filter-footer > span {
+    color: #64748b;
+    font-size: 13px;
+}
+
+.find-freelancers-page .clear-filters-button {
+    min-height: 40px;
+    padding: 0 16px;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    background: #fff;
+    color: #334155;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.find-freelancers-page .clear-filters-button:hover {
+    border-color: #2864f0;
+    color: #2864f0;
+    background: #eff6ff;
+}
+
+/* Keyboard accessibility */
+.find-freelancers-page .freelancer-filter-button:focus-visible,
+.find-freelancers-page .clear-filters-button:focus-visible {
+    outline: 3px solid rgba(40, 100, 240, 0.25);
+    outline-offset: 3px;
+}
+
+/* ==========================================
+   Responsive layout
+   ========================================== */
+
+@media (max-width: 900px) {
+    .find-freelancers-page .freelancer-filter-panel {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 520px) {
+    .find-freelancers-page .freelancer-search-card {
+        padding: 20px 16px;
+    }
+
+    .find-freelancers-page .freelancer-search-row {
+        gap: 8px;
+    }
+
+    .find-freelancers-page .freelancer-search-row > input {
+        padding: 0 10px;
+        font-size: 13px;
+    }
+
+    .find-freelancers-page .freelancer-filter-button {
+        min-width: 94px;
+        padding: 0 8px;
+        gap: 5px;
+        font-size: 12px;
+    }
+
+    .find-freelancers-page .freelancer-filter-panel {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .find-freelancers-page .freelancer-filter-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+}
+

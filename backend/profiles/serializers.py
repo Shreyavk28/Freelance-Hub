@@ -3,6 +3,7 @@ from rest_framework import serializers
 from .models import (
     ClientProfile,
     FreelancerProfile,
+    SavedFreelancer,
 )
 
 
@@ -23,6 +24,7 @@ class ClientProfileSerializer(serializers.ModelSerializer):
     )
 
     class Meta:
+
         model = ClientProfile
 
         fields = [
@@ -48,10 +50,6 @@ class ClientProfileSerializer(serializers.ModelSerializer):
 
 class FreelancerProfileSerializer(serializers.ModelSerializer):
 
-    # -----------------------------------------------------
-    # User information
-    # -----------------------------------------------------
-
     username = serializers.CharField(
         source="user.username",
         read_only=True
@@ -62,17 +60,12 @@ class FreelancerProfileSerializer(serializers.ModelSerializer):
         read_only=True
     )
 
-    # -----------------------------------------------------
-    # Freelancer skills
-    # -----------------------------------------------------
-
     skills = serializers.SerializerMethodField()
 
-    # =====================================================
-    # META
-    # =====================================================
+    is_saved = serializers.SerializerMethodField()
 
     class Meta:
+
         model = FreelancerProfile
 
         fields = [
@@ -86,6 +79,7 @@ class FreelancerProfileSerializer(serializers.ModelSerializer):
             "hourly_rate",
             "profile_picture",
             "skills",
+            "is_saved",
         ]
 
         read_only_fields = [
@@ -93,6 +87,7 @@ class FreelancerProfileSerializer(serializers.ModelSerializer):
             "username",
             "email",
             "skills",
+            "is_saved",
         ]
 
     # =====================================================
@@ -113,3 +108,66 @@ class FreelancerProfileSerializer(serializers.ModelSerializer):
             )
 
         return skills
+
+    # =====================================================
+    # CHECK WHETHER CLIENT SAVED FREELANCER
+    # =====================================================
+
+    def get_is_saved(self, obj):
+
+        request = self.context.get("request")
+
+        if not request:
+            return False
+
+        if not request.user.is_authenticated:
+            return False
+
+        if request.user.role != "CLIENT":
+            return False
+
+        return SavedFreelancer.objects.filter(
+            client=request.user,
+            freelancer=obj
+        ).exists()
+
+
+# =========================================================
+# SAVED FREELANCER SERIALIZER
+# =========================================================
+
+class SavedFreelancerSerializer(serializers.ModelSerializer):
+
+    freelancer = FreelancerProfileSerializer(
+        read_only=True
+    )
+
+    freelancer_id = serializers.IntegerField(
+        source="freelancer.id",
+        read_only=True
+    )
+
+    username = serializers.CharField(
+        source="freelancer.user.username",
+        read_only=True
+    )
+
+    class Meta:
+
+        model = SavedFreelancer
+
+        fields = [
+            "id",
+            "freelancer_id",
+            "username",
+            "freelancer",
+            "created_at",
+        ]
+
+        read_only_fields = [
+            "id",
+            "freelancer_id",
+            "username",
+            "freelancer",
+            "created_at",
+        ]

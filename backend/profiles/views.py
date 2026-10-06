@@ -8,11 +8,13 @@ from rest_framework import status
 from .models import (
     ClientProfile,
     FreelancerProfile,
+    SavedFreelancer,
 )
 
 from .serializers import (
     ClientProfileSerializer,
     FreelancerProfileSerializer,
+    SavedFreelancerSerializer,
 )
 
 
@@ -27,9 +29,11 @@ class ClientProfileView(APIView):
     def get(self, request):
 
         if request.user.role != "CLIENT":
+
             return Response(
                 {
-                    "detail": "Only clients can access client profiles."
+                    "detail":
+                        "Only clients can access client profiles."
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -38,7 +42,9 @@ class ClientProfileView(APIView):
             user=request.user
         )
 
-        serializer = ClientProfileSerializer(profile)
+        serializer = ClientProfileSerializer(
+            profile
+        )
 
         return Response(
             serializer.data,
@@ -48,9 +54,11 @@ class ClientProfileView(APIView):
     def put(self, request):
 
         if request.user.role != "CLIENT":
+
             return Response(
                 {
-                    "detail": "Only clients can update client profiles."
+                    "detail":
+                        "Only clients can update client profiles."
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -91,9 +99,11 @@ class FreelancerProfileView(APIView):
     def get(self, request):
 
         if request.user.role != "FREELANCER":
+
             return Response(
                 {
-                    "detail": "Only freelancers can access their profile."
+                    "detail":
+                        "Only freelancers can access their profile."
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -102,7 +112,10 @@ class FreelancerProfileView(APIView):
             user=request.user
         )
 
-        serializer = FreelancerProfileSerializer(profile)
+        serializer = FreelancerProfileSerializer(
+            profile,
+            context={"request": request}
+        )
 
         return Response(
             serializer.data,
@@ -112,9 +125,11 @@ class FreelancerProfileView(APIView):
     def put(self, request):
 
         if request.user.role != "FREELANCER":
+
             return Response(
                 {
-                    "detail": "Only freelancers can update their profile."
+                    "detail":
+                        "Only freelancers can update their profile."
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -155,9 +170,11 @@ class FreelancerProfilePhotoDeleteView(APIView):
     def delete(self, request):
 
         if request.user.role != "FREELANCER":
+
             return Response(
                 {
-                    "detail": "Only freelancers can delete their profile photo."
+                    "detail":
+                        "Only freelancers can delete their profile photo."
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
@@ -180,7 +197,8 @@ class FreelancerProfilePhotoDeleteView(APIView):
 
         return Response(
             {
-                "detail": "Profile photo removed successfully."
+                "detail":
+                    "Profile photo removed successfully."
             },
             status=status.HTTP_200_OK
         )
@@ -196,21 +214,15 @@ class FreelancerListView(APIView):
 
     def get(self, request):
 
-        # -----------------------------------------------------
-        # Only clients can browse freelancers
-        # -----------------------------------------------------
-
         if request.user.role != "CLIENT":
+
             return Response(
                 {
-                    "detail": "Only clients can browse freelancers."
+                    "detail":
+                        "Only clients can browse freelancers."
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
-
-        # -----------------------------------------------------
-        # Get freelancer profiles
-        # -----------------------------------------------------
 
         freelancers = (
             FreelancerProfile.objects
@@ -222,7 +234,7 @@ class FreelancerListView(APIView):
         )
 
         # -----------------------------------------------------
-        # Search
+        # SEARCH
         # -----------------------------------------------------
 
         search = request.GET.get(
@@ -233,39 +245,29 @@ class FreelancerListView(APIView):
         if search:
 
             freelancers = freelancers.filter(
-
                 Q(
                     user__username__icontains=search
                 )
-
                 |
-
                 Q(
                     headline__icontains=search
                 )
-
                 |
-
                 Q(
                     bio__icontains=search
                 )
-
                 |
-
                 Q(
                     location__icontains=search
                 )
-
                 |
-
                 Q(
                     user__freelancer_skills__skill__name__icontains=search
                 )
-
             ).distinct()
 
         # -----------------------------------------------------
-        # Filter by skill
+        # FILTER BY SKILL
         # -----------------------------------------------------
 
         skill_id = request.GET.get("skill")
@@ -280,7 +282,8 @@ class FreelancerListView(APIView):
 
                 return Response(
                     {
-                        "detail": "Invalid skill ID."
+                        "detail":
+                            "Invalid skill ID."
                     },
                     status=status.HTTP_400_BAD_REQUEST
                 )
@@ -290,7 +293,7 @@ class FreelancerListView(APIView):
             ).distinct()
 
         # -----------------------------------------------------
-        # Serialize
+        # SERIALIZE
         # -----------------------------------------------------
 
         serializer = FreelancerProfileSerializer(
@@ -315,33 +318,21 @@ class FreelancerDetailView(APIView):
 
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, freelancer_id):
-
-        # -----------------------------------------------------
-        # Only clients can view freelancer profiles
-        # -----------------------------------------------------
+    def get(
+        self,
+        request,
+        freelancer_id
+    ):
 
         if request.user.role != "CLIENT":
+
             return Response(
                 {
-                    "detail": "Only clients can view freelancer profiles."
+                    "detail":
+                        "Only clients can view freelancer profiles."
                 },
                 status=status.HTTP_403_FORBIDDEN
             )
-
-        # -----------------------------------------------------
-        # IMPORTANT:
-        # freelancer_id is FreelancerProfile.id
-        #
-        # The Find Freelancers API returns the profile ID.
-        # Therefore we must search by:
-        #
-        #     id=freelancer_id
-        #
-        # NOT:
-        #
-        #     user_id=freelancer_id
-        # -----------------------------------------------------
 
         try:
 
@@ -360,14 +351,11 @@ class FreelancerDetailView(APIView):
 
             return Response(
                 {
-                    "detail": "Freelancer profile not found."
+                    "detail":
+                        "Freelancer profile not found."
                 },
                 status=status.HTTP_404_NOT_FOUND
             )
-
-        # -----------------------------------------------------
-        # Serialize
-        # -----------------------------------------------------
 
         serializer = FreelancerProfileSerializer(
             freelancer,
@@ -378,5 +366,161 @@ class FreelancerDetailView(APIView):
 
         return Response(
             serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+
+# =========================================================
+# SAVED FREELANCERS
+# =========================================================
+
+class SavedFreelancerListView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        if request.user.role != "CLIENT":
+
+            return Response(
+                {
+                    "detail":
+                        "Only clients can access saved freelancers."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        saved = (
+            SavedFreelancer.objects
+            .filter(
+                client=request.user
+            )
+            .select_related(
+                "freelancer",
+                "freelancer__user"
+            )
+            .prefetch_related(
+                "freelancer__user__freelancer_skills__skill"
+            )
+        )
+
+        serializer = SavedFreelancerSerializer(
+            saved,
+            many=True,
+            context={
+                "request": request
+            }
+        )
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK
+        )
+
+
+# =========================================================
+# SAVE / REMOVE FREELANCER
+# =========================================================
+
+class SavedFreelancerView(APIView):
+
+    permission_classes = [IsAuthenticated]
+
+    def post(
+        self,
+        request,
+        freelancer_id
+    ):
+
+        if request.user.role != "CLIENT":
+
+            return Response(
+                {
+                    "detail":
+                        "Only clients can save freelancers."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+
+            freelancer = FreelancerProfile.objects.get(
+                id=freelancer_id
+            )
+
+        except FreelancerProfile.DoesNotExist:
+
+            return Response(
+                {
+                    "detail":
+                        "Freelancer profile not found."
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        saved, created = SavedFreelancer.objects.get_or_create(
+            client=request.user,
+            freelancer=freelancer
+        )
+
+        if not created:
+
+            return Response(
+                {
+                    "detail":
+                        "Freelancer is already saved.",
+                    "is_saved": True
+                },
+                status=status.HTTP_200_OK
+            )
+
+        return Response(
+            {
+                "detail":
+                    "Freelancer saved successfully.",
+                "is_saved": True,
+                "saved_id": saved.id
+            },
+            status=status.HTTP_201_CREATED
+        )
+
+    def delete(
+        self,
+        request,
+        freelancer_id
+    ):
+
+        if request.user.role != "CLIENT":
+
+            return Response(
+                {
+                    "detail":
+                        "Only clients can remove saved freelancers."
+                },
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        deleted_count, _ = SavedFreelancer.objects.filter(
+            client=request.user,
+            freelancer_id=freelancer_id
+        ).delete()
+
+        if deleted_count == 0:
+
+            return Response(
+                {
+                    "detail":
+                        "Freelancer was not saved.",
+                    "is_saved": False
+                },
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(
+            {
+                "detail":
+                    "Freelancer removed from saved list.",
+                "is_saved": False
+            },
             status=status.HTTP_200_OK
         )

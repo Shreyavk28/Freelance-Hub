@@ -571,3 +571,4 @@ class InvitationDecisionView(APIView):
             response_data,
             status=status.HTTP_200_OK
         )
+        
